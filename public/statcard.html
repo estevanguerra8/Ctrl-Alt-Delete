@@ -146,6 +146,11 @@
             font-size: 64px;
             font-weight: 700;
             line-height: 1;
+            transition: all 0.3s ease;
+        }
+
+        .card-rating.animating {
+            animation: statPulse 0.3s ease;
         }
 
         .card-position {
@@ -178,6 +183,13 @@
             font-size: 46px;
             font-weight: 700;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .player-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         /* Player Name */
@@ -219,6 +231,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            position: relative;
         }
 
         .stat-row.left {
@@ -235,6 +248,63 @@
             font-size: 24px;
             font-weight: 700;
             min-width: 36px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-value.animating {
+            animation: statPulse 0.3s ease;
+        }
+
+        .stat-value.stat-up {
+            color: #4ade80 !important;
+            text-shadow: 0 0 10px rgba(74, 222, 128, 0.5) !important;
+        }
+
+        .stat-value.stat-down {
+            color: #f87171 !important;
+            text-shadow: 0 0 10px rgba(248, 113, 113, 0.5) !important;
+        }
+
+        @keyframes statPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        /* Stat change indicator */
+        .stat-change {
+            position: absolute;
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .stat-row.left .stat-change {
+            left: 40px;
+            top: -5px;
+        }
+
+        .stat-row.right .stat-change {
+            right: 40px;
+            top: -5px;
+        }
+
+        .stat-change.positive {
+            color: #4ade80;
+            animation: floatUp 1.5s ease-out forwards;
+        }
+
+        .stat-change.negative {
+            color: #f87171;
+            animation: floatUp 1.5s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(10px); }
+            20% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-30px); }
         }
 
         .stat-row.left .stat-value {
@@ -305,6 +375,107 @@
         @keyframes shine {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
+        }
+
+        /* ===================
+           DUEL RESULT OVERLAY
+           =================== */
+        .duel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0);
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.5s ease;
+        }
+
+        .duel-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .duel-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .duel-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.5s ease;
+        }
+
+        .duel-overlay.active .duel-title {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .duel-result {
+            font-family: 'Oswald', sans-serif;
+            font-size: 72px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .duel-result.win { color: #4ade80; text-shadow: 0 0 40px rgba(74, 222, 128, 0.6); }
+        .duel-result.loss { color: #f87171; text-shadow: 0 0 40px rgba(248, 113, 113, 0.6); }
+        .duel-result.draw { color: #fbbf24; text-shadow: 0 0 40px rgba(251, 191, 36, 0.6); }
+
+        .duel-overlay.active .duel-result {
+            opacity: 1;
+            transform: scale(1);
+            transition-delay: 0.3s;
+        }
+
+        .duel-category {
+            font-family: 'Oswald', sans-serif;
+            font-size: 24px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .duel-overlay.active .duel-category {
+            opacity: 1;
+            transition-delay: 0.5s;
+        }
+
+        .duel-rating-change {
+            font-family: 'Oswald', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .duel-rating-change.positive { color: #4ade80; }
+        .duel-rating-change.negative { color: #f87171; }
+
+        .duel-overlay.active .duel-rating-change {
+            opacity: 1;
+            transition-delay: 0.7s;
         }
 
         /* ===================
@@ -585,12 +756,6 @@
             color: #1a3028;
             border: 1px solid #80c8a8;
             box-shadow: 0 0 10px rgba(168, 216, 192, 0.4);
-        }
-
-        .tier-label.platinum {
-            background: linear-gradient(135deg, #ffffff 0%, #c8e6d8 50%, #80c8a8 100%);
-            color: #1a3028;
-            box-shadow: 0 0 15px rgba(168, 216, 192, 0.5);
         }
 
         .tier-label.platinum {
@@ -881,6 +1046,13 @@
             font-size: 14px;
             font-weight: 700;
             margin-right: 12px;
+            overflow: hidden;
+        }
+
+        .lb-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         /* Matte/Dull tiers */
@@ -955,6 +1127,15 @@
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .demo-btn.duel-btn {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: #0a2a10;
+        }
+
+        .demo-btn.duel-btn:hover {
+            box-shadow: 0 5px 20px rgba(74, 222, 128, 0.4);
         }
 
         /* Responsive */
@@ -1080,16 +1261,6 @@
 
     <h1 class="page-title">Series StatCards</h1>
 
-    <!-- Demo Controls for Testing Animations -->
-    <div class="demo-controls">
-        <button class="demo-btn" onclick="StatCard.demoRankUp('bronze', 'silver')">Bronze → Silver</button>
-        <button class="demo-btn" onclick="StatCard.demoRankUp('silver', 'gold')">Silver → Gold</button>
-        <button class="demo-btn" onclick="StatCard.demoRankUp('gold', 'platinum')">Gold → Platinum</button>
-        <button class="demo-btn" onclick="StatCard.demoRankUp('platinum', 'diamond')">Platinum → Diamond</button>
-        <button class="demo-btn" onclick="StatCard.demoRankUp('diamond', 'legend')">Diamond → Legend</button>
-        <button class="demo-btn" onclick="StatCard.demoRankUp('legend', 'icon')">Legend → Icon</button>
-    </div>
-
     <div class="main-container">
         <div class="card-section">
             <div id="card-container"></div>
@@ -1098,6 +1269,16 @@
         <div class="leaderboard-section">
             <h2 class="leaderboard-title">👑 Global Rankings</h2>
             <div class="leaderboard-list" id="leaderboard-list"></div>
+        </div>
+    </div>
+
+    <!-- Duel Result Overlay -->
+    <div class="duel-overlay" id="duel-overlay">
+        <div class="duel-container">
+            <div class="duel-title" id="duel-title">DUEL COMPLETE</div>
+            <div class="duel-result" id="duel-result">VICTORY</div>
+            <div class="duel-category" id="duel-category">Engineering Challenge</div>
+            <div class="duel-rating-change" id="duel-rating-change">+25 Rating</div>
         </div>
     </div>
 
@@ -1121,10 +1302,8 @@
         const StatCard = (function() {
             // Tier Configuration
             const TIERS = [
-                // Matte/Dull tiers
                 { id: 'bronze', name: 'BRONZE', min: 0, max: 999, gradient: 'bronzeGradient', color: '#8b6239', glow: 'rgba(139, 98, 57, 0.6)' },
                 { id: 'silver', name: 'SILVER', min: 1000, max: 1399, gradient: 'silverGradient', color: '#a0a0a0', glow: 'rgba(160, 160, 160, 0.6)' },
-                // Shiny tiers
                 { id: 'gold', name: 'GOLD', min: 1400, max: 1799, gradient: 'goldGradient', color: '#ffd700', glow: 'rgba(255, 215, 0, 0.9)' },
                 { id: 'platinum', name: 'PLATINUM', min: 1800, max: 2199, gradient: 'platinumGradient', color: '#80c8a8', glow: 'rgba(128, 200, 168, 0.9)' },
                 { id: 'diamond', name: 'DIAMOND', min: 2200, max: 2599, gradient: 'diamondGradient', color: '#a0d8ff', glow: 'rgba(160, 216, 255, 1)' },
@@ -1132,8 +1311,117 @@
                 { id: 'icon', name: 'ICON', min: 3000, max: Infinity, gradient: 'iconGradient', color: '#c8a0ff', glow: 'rgba(200, 160, 255, 1)' }
             ];
 
+            // Hardcoded user data with profile images
+            const USERS_DATA = [
+                { 
+                    userId: 'alex_chen', 
+                    displayName: 'Alex Chen',
+                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+                    blendedRating: 1750, 
+                    rank: 1, 
+                    stats: { 
+                        engineering: { rating: 1850 }, 
+                        finance: { rating: 1680 }, 
+                        creative: { rating: 1720 }, 
+                        business_ops: { rating: 1700 }, 
+                        product: { rating: 1780 }, 
+                        research: { rating: 1620 } 
+                    }
+                },
+                { 
+                    userId: 'sarah_kim', 
+                    displayName: 'Sarah Kim',
+                    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
+                    blendedRating: 1680, 
+                    rank: 2, 
+                    stats: { 
+                        engineering: { rating: 1720 }, 
+                        finance: { rating: 1750 }, 
+                        creative: { rating: 1650 }, 
+                        business_ops: { rating: 1680 }, 
+                        product: { rating: 1600 }, 
+                        research: { rating: 1700 } 
+                    }
+                },
+                { 
+                    userId: 'mike_johnson', 
+                    displayName: 'Mike Johnson',
+                    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+                    blendedRating: 1620, 
+                    rank: 3, 
+                    stats: { 
+                        engineering: { rating: 1580 }, 
+                        finance: { rating: 1600 }, 
+                        creative: { rating: 1700 }, 
+                        business_ops: { rating: 1650 }, 
+                        product: { rating: 1620 }, 
+                        research: { rating: 1550 } 
+                    }
+                },
+                { 
+                    userId: 'emma_davis', 
+                    displayName: 'Emma Davis',
+                    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+                    blendedRating: 1550, 
+                    rank: 4, 
+                    stats: { 
+                        engineering: { rating: 1500 }, 
+                        finance: { rating: 1580 }, 
+                        creative: { rating: 1620 }, 
+                        business_ops: { rating: 1550 }, 
+                        product: { rating: 1480 }, 
+                        research: { rating: 1570 } 
+                    }
+                },
+                { 
+                    userId: 'james_wilson', 
+                    displayName: 'James Wilson',
+                    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+                    blendedRating: 1480, 
+                    rank: 5, 
+                    stats: { 
+                        engineering: { rating: 1520 }, 
+                        finance: { rating: 1450 }, 
+                        creative: { rating: 1500 }, 
+                        business_ops: { rating: 1480 }, 
+                        product: { rating: 1460 }, 
+                        research: { rating: 1470 } 
+                    }
+                },
+                { 
+                    userId: 'lisa_wang', 
+                    displayName: 'Lisa Wang',
+                    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
+                    blendedRating: 1420, 
+                    rank: 6, 
+                    stats: { 
+                        engineering: { rating: 1400 }, 
+                        finance: { rating: 1450 }, 
+                        creative: { rating: 1480 }, 
+                        business_ops: { rating: 1420 }, 
+                        product: { rating: 1380 }, 
+                        research: { rating: 1390 } 
+                    }
+                },
+                { 
+                    userId: 'david_brown', 
+                    displayName: 'David Brown',
+                    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face',
+                    blendedRating: 1350, 
+                    rank: 7, 
+                    stats: { 
+                        engineering: { rating: 1380 }, 
+                        finance: { rating: 1320 }, 
+                        creative: { rating: 1350 }, 
+                        business_ops: { rating: 1340 }, 
+                        product: { rating: 1360 }, 
+                        research: { rating: 1300 } 
+                    }
+                }
+            ];
+
             // State
-            let allUsers = [];
+            let allUsers = [...USERS_DATA];
             let selectedUserId = null;
             let animationInProgress = false;
             let animationTimers = [];
@@ -1190,6 +1478,10 @@
             }
 
             function createCardHTML(data, tier) {
+                const avatarContent = data.avatar 
+                    ? `<img src="${data.avatar}" alt="${data.displayName || data.userId}" onerror="this.parentElement.innerHTML='${getInitials(data.displayName || data.userId)}'">`
+                    : getInitials(data.displayName || data.userId);
+
                 return `
                     <div class="card-wrapper">
                         <div class="fifa-card ${tier.id}" data-user="${data.userId}">
@@ -1210,42 +1502,48 @@
                             <div class="card-pattern"></div>
                             
                             <div class="card-top">
-                                <div class="card-rating">${ratingToOvr(data.blendedRating)}</div>
+                                <div class="card-rating" data-stat="overall">${ratingToOvr(data.blendedRating)}</div>
                                 <div class="card-position">${getBestArchetype(data.stats)}</div>
                             </div>
                             
                             <div class="player-image-container">
-                                <div class="player-placeholder">${getInitials(data.userId)}</div>
+                                <div class="player-placeholder">${avatarContent}</div>
                             </div>
                             
                             <div class="player-name-bar">
-                                <div class="player-name">${data.userId.toUpperCase()}</div>
+                                <div class="player-name">${(data.displayName || data.userId).toUpperCase()}</div>
                             </div>
                             
                             <div class="stats-container">
-                                <div class="stat-row left">
-                                    <span class="stat-value">${statToDisplay(data.stats.engineering?.rating || 1000)}</span>
+                                <div class="stat-row left" data-stat-key="engineering">
+                                    <span class="stat-value" data-stat="engineering">${statToDisplay(data.stats.engineering?.rating || 1000)}</span>
                                     <span class="stat-label">ENG</span>
+                                    <span class="stat-change"></span>
                                 </div>
-                                <div class="stat-row right">
-                                    <span class="stat-value">${statToDisplay(data.stats.finance?.rating || 1000)}</span>
+                                <div class="stat-row right" data-stat-key="finance">
+                                    <span class="stat-value" data-stat="finance">${statToDisplay(data.stats.finance?.rating || 1000)}</span>
                                     <span class="stat-label">FIN</span>
+                                    <span class="stat-change"></span>
                                 </div>
-                                <div class="stat-row left">
-                                    <span class="stat-value">${statToDisplay(data.stats.creative?.rating || 1000)}</span>
+                                <div class="stat-row left" data-stat-key="creative">
+                                    <span class="stat-value" data-stat="creative">${statToDisplay(data.stats.creative?.rating || 1000)}</span>
                                     <span class="stat-label">CRE</span>
+                                    <span class="stat-change"></span>
                                 </div>
-                                <div class="stat-row right">
-                                    <span class="stat-value">${statToDisplay(data.stats.business_ops?.rating || 1000)}</span>
+                                <div class="stat-row right" data-stat-key="business_ops">
+                                    <span class="stat-value" data-stat="business_ops">${statToDisplay(data.stats.business_ops?.rating || 1000)}</span>
                                     <span class="stat-label">BUS</span>
+                                    <span class="stat-change"></span>
                                 </div>
-                                <div class="stat-row left">
-                                    <span class="stat-value">${statToDisplay(data.stats.product?.rating || 1000)}</span>
+                                <div class="stat-row left" data-stat-key="product">
+                                    <span class="stat-value" data-stat="product">${statToDisplay(data.stats.product?.rating || 1000)}</span>
                                     <span class="stat-label">PRD</span>
+                                    <span class="stat-change"></span>
                                 </div>
-                                <div class="stat-row right">
-                                    <span class="stat-value">${statToDisplay(data.stats.research?.rating || 1000)}</span>
+                                <div class="stat-row right" data-stat-key="research">
+                                    <span class="stat-value" data-stat="research">${statToDisplay(data.stats.research?.rating || 1000)}</span>
                                     <span class="stat-label">RES</span>
+                                    <span class="stat-change"></span>
                                 </div>
                             </div>
                             
@@ -1261,10 +1559,283 @@
             }
 
             // ===================
+            // STAT ANIMATION
+            // ===================
+            function animateStatChange(statElement, oldValue, newValue, duration = 800) {
+                return new Promise(resolve => {
+                    const startTime = performance.now();
+                    const diff = newValue - oldValue;
+                    
+                    // Add direction class
+                    if (diff > 0) {
+                        statElement.classList.add('stat-up');
+                    } else if (diff < 0) {
+                        statElement.classList.add('stat-down');
+                    }
+                    
+                    statElement.classList.add('animating');
+                    
+                    function update(currentTime) {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        
+                        // Easing function
+                        const easeOut = 1 - Math.pow(1 - progress, 3);
+                        const currentValue = Math.round(oldValue + diff * easeOut);
+                        
+                        statElement.textContent = currentValue;
+                        
+                        if (progress < 1) {
+                            requestAnimationFrame(update);
+                        } else {
+                            statElement.textContent = newValue;
+                            statElement.classList.remove('animating');
+                            
+                            // Keep color for a moment then fade
+                            setTimeout(() => {
+                                statElement.classList.remove('stat-up', 'stat-down');
+                            }, 1500);
+                            
+                            resolve();
+                        }
+                    }
+                    
+                    requestAnimationFrame(update);
+                });
+            }
+
+            function showStatChangeIndicator(statRow, change) {
+                const indicator = statRow.querySelector('.stat-change');
+                if (!indicator) return;
+                
+                indicator.textContent = change > 0 ? `+${change}` : `${change}`;
+                indicator.className = 'stat-change ' + (change > 0 ? 'positive' : 'negative');
+                
+                // Reset animation
+                indicator.style.animation = 'none';
+                indicator.offsetHeight; // Trigger reflow
+                indicator.style.animation = '';
+            }
+
+            // ===================
+            // FULL WORKFLOW DEMO
+            // ===================
+            async function demoFullWorkflow() {
+                if (animationInProgress) return;
+                animationInProgress = true;
+
+                // Setup: Create a user right at the edge of Gold → Platinum threshold
+                // Gold max is 1799, Platinum starts at 1800
+                const demoUser = {
+                    userId: 'demo_player',
+                    displayName: 'Demo Player',
+                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+                    blendedRating: 1780, // Just below Platinum (1800)
+                    rank: 1,
+                    stats: {
+                        engineering: { rating: 1790 },
+                        finance: { rating: 1770 },
+                        creative: { rating: 1785 },
+                        business_ops: { rating: 1775 },
+                        product: { rating: 1780 },
+                        research: { rating: 1780 }
+                    }
+                };
+
+                // Display the demo user's card first
+                selectedUserId = demoUser.userId;
+                const oldTier = getTier(demoUser.blendedRating);
+                const container = document.getElementById('card-container');
+                container.innerHTML = createCardHTML(demoUser, oldTier);
+
+                await new Promise(r => setTimeout(r, 500));
+
+                // Store old values for animation
+                const oldBlendedRating = demoUser.blendedRating;
+                const oldEngRating = demoUser.stats.engineering.rating;
+
+                // The duel win - guaranteed positive change
+                const ratingGain = 32; // Enough to push into Platinum
+                const newEngRating = oldEngRating + ratingGain;
+                demoUser.stats.engineering.rating = newEngRating;
+
+                // Recalculate blended rating
+                let totalRating = 0;
+                for (const stat of Object.values(demoUser.stats)) {
+                    totalRating += stat.rating;
+                }
+                demoUser.blendedRating = Math.round(totalRating / 6); // Will be ~1785 + 5 = ~1785
+
+                // Actually, let's make sure it crosses threshold
+                // Set it explicitly to cross into Platinum
+                demoUser.blendedRating = 1810;
+
+                // PHASE 1: Show Duel Result Overlay
+                const overlay = document.getElementById('duel-overlay');
+                const resultEl = document.getElementById('duel-result');
+                const categoryEl = document.getElementById('duel-category');
+                const changeEl = document.getElementById('duel-rating-change');
+                
+                resultEl.textContent = 'VICTORY!';
+                resultEl.className = 'duel-result win';
+                categoryEl.textContent = 'Engineering Challenge';
+                changeEl.textContent = `+${ratingGain} Rating`;
+                changeEl.className = 'duel-rating-change positive';
+                
+                overlay.classList.add('active');
+                
+                await new Promise(r => setTimeout(r, 2000));
+                overlay.classList.remove('active');
+                
+                await new Promise(r => setTimeout(r, 600));
+
+                // PHASE 2: Animate Engineering stat going UP
+                const card = document.querySelector('.fifa-card');
+                if (card) {
+                    const statRow = card.querySelector('[data-stat-key="engineering"]');
+                    const statValue = statRow?.querySelector('.stat-value');
+                    
+                    if (statValue) {
+                        const oldDisplay = statToDisplay(oldEngRating);
+                        const newDisplay = statToDisplay(newEngRating);
+                        const displayChange = newDisplay - oldDisplay;
+                        
+                        showStatChangeIndicator(statRow, displayChange);
+                        await animateStatChange(statValue, oldDisplay, newDisplay, 1000);
+                    }
+
+                    await new Promise(r => setTimeout(r, 400));
+
+                    // PHASE 3: Animate Overall rating going UP
+                    const overallEl = card.querySelector('[data-stat="overall"]');
+                    if (overallEl) {
+                        const oldOvr = ratingToOvr(oldBlendedRating);
+                        const newOvr = ratingToOvr(demoUser.blendedRating);
+                        
+                        // Add green glow to overall
+                        overallEl.classList.add('stat-up');
+                        await animateStatChange(overallEl, oldOvr, newOvr, 800);
+                    }
+                }
+
+                await new Promise(r => setTimeout(r, 800));
+
+                // PHASE 4: Rank Up Animation (Gold → Platinum)
+                const newTier = getTier(demoUser.blendedRating);
+                await playRankUpAnimationInternal(demoUser, 'gold', 'platinum');
+
+                // Final: Show the new Platinum card
+                const finalTier = getTier(demoUser.blendedRating);
+                container.innerHTML = createCardHTML(demoUser, finalTier);
+                
+                animationInProgress = false;
+            }
+
+            // Internal rank up that doesn't check animationInProgress
+            function playRankUpAnimationInternal(userData, oldTier, newTier) {
+                return new Promise((resolve) => {
+                    const overlay = document.getElementById('rankup-overlay');
+                    const cardContainer = document.getElementById('rankup-card-container');
+                    const particlesContainer = document.getElementById('particles-container');
+                    const glowRing = document.getElementById('glow-ring');
+                    const starBurst = document.getElementById('star-burst');
+                    const rankupText = document.getElementById('rankup-text');
+                    const tierName = document.getElementById('rankup-tier-name');
+
+                    particlesContainer.innerHTML = '';
+                    animationTimers.forEach(t => clearTimeout(t));
+                    animationTimers = [];
+
+                    const oldTierData = getTierById(oldTier);
+                    const newTierData = getTierById(newTier);
+                    
+                    cardContainer.innerHTML = createCardHTML(userData, oldTierData);
+                    const card = cardContainer.querySelector('.fifa-card');
+                    card.classList.add('no-hover');
+
+                    rankupText.style.color = newTierData.color;
+                    tierName.style.color = newTierData.color;
+                    tierName.textContent = newTierData.name;
+                    glowRing.style.boxShadow = `0 0 100px 50px ${newTierData.glow}, inset 0 0 100px 50px ${newTierData.glow}`;
+                    starBurst.style.background = `radial-gradient(circle, ${newTierData.glow} 0%, transparent 70%)`;
+
+                    overlay.classList.add('active');
+
+                    const timeline = [
+                        { time: 100, fn: () => {
+                            card.style.animation = 'cardShake 0.1s ease infinite';
+                            card.style.filter = 'brightness(1.2)';
+                        }},
+                        { time: 500, fn: () => createParticles(particlesContainer, oldTierData.color, 30) },
+                        { time: 800, fn: () => {
+                            glowRing.style.transition = 'opacity 0.5s ease';
+                            glowRing.style.opacity = '0.5';
+                        }},
+                        { time: 1200, fn: () => {
+                            card.style.animation = 'none';
+                            card.style.transition = 'transform 0.8s ease, filter 0.3s ease';
+                            card.style.transform = 'rotateY(90deg) scale(0.8)';
+                            card.style.filter = 'brightness(2)';
+                        }},
+                        { time: 1600, fn: () => {
+                            cardContainer.innerHTML = createCardHTML(userData, newTierData);
+                            const newCard = cardContainer.querySelector('.fifa-card');
+                            newCard.classList.add('no-hover');
+                            newCard.style.transform = 'rotateY(-90deg) scale(0.8)';
+                            newCard.style.filter = 'brightness(2)';
+                            newCard.style.transition = 'transform 0.8s ease, filter 0.5s ease';
+                            
+                            starBurst.style.transition = 'all 0.5s ease';
+                            starBurst.style.width = '800px';
+                            starBurst.style.height = '800px';
+                            starBurst.style.opacity = '0.8';
+                        }},
+                        { time: 1700, fn: () => {
+                            const newCard = cardContainer.querySelector('.fifa-card');
+                            newCard.style.transform = 'rotateY(0deg) scale(1)';
+                            newCard.style.filter = 'brightness(1.5)';
+                            createParticles(particlesContainer, newTierData.color, 50);
+                        }},
+                        { time: 2000, fn: () => {
+                            rankupText.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                            rankupText.style.opacity = '1';
+                            rankupText.style.transform = 'scale(1) translateY(0)';
+                            
+                            const newCard = cardContainer.querySelector('.fifa-card');
+                            newCard.style.filter = 'brightness(1)';
+                        }},
+                        { time: 2500, fn: () => {
+                            tierName.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                            tierName.style.opacity = '1';
+                            tierName.style.transform = 'scale(1)';
+                            glowRing.style.animation = 'glowPulse 1s ease infinite';
+                        }},
+                        { time: 3000, fn: () => {
+                            starBurst.style.opacity = '0';
+                            starBurst.style.width = '1000px';
+                            starBurst.style.height = '1000px';
+                        }},
+                        { time: 4500, fn: () => {
+                            rankupText.style.opacity = '0';
+                            tierName.style.opacity = '0';
+                            glowRing.style.opacity = '0';
+                        }},
+                        { time: 5000, fn: () => {
+                            finishAnimation(resolve, newTierData);
+                        }}
+                    ];
+
+                    timeline.forEach(({ time, fn }) => {
+                        animationTimers.push(setTimeout(fn, time));
+                    });
+                });
+            }
+
+            // ===================
             // RANK UP ANIMATION
             // ===================
             function playRankUpAnimation(userData, oldTier, newTier) {
-                if (animationInProgress) return Promise.resolve();
+                if (animationInProgress && !arguments[3]) return Promise.resolve();
                 animationInProgress = true;
 
                 return new Promise((resolve) => {
@@ -1301,32 +1872,22 @@
 
                     // Animation Timeline
                     const timeline = [
-                        // Phase 1: Card shakes and glows (0-1000ms)
                         { time: 100, fn: () => {
                             card.style.animation = 'cardShake 0.1s ease infinite';
                             card.style.filter = 'brightness(1.2)';
                         }},
-                        
-                        // Phase 2: Particles start (500ms)
                         { time: 500, fn: () => createParticles(particlesContainer, oldTierData.color, 30) },
-                        
-                        // Phase 3: Glow ring appears (800ms)
                         { time: 800, fn: () => {
                             glowRing.style.transition = 'opacity 0.5s ease';
                             glowRing.style.opacity = '0.5';
                         }},
-                        
-                        // Phase 4: Card flips and transforms (1200ms)
                         { time: 1200, fn: () => {
                             card.style.animation = 'none';
                             card.style.transition = 'transform 0.8s ease, filter 0.3s ease';
                             card.style.transform = 'rotateY(90deg) scale(0.8)';
                             card.style.filter = 'brightness(2)';
                         }},
-                        
-                        // Phase 5: Swap to new tier (1600ms - at 90deg rotation)
                         { time: 1600, fn: () => {
-                            // Update card to new tier
                             const newUserData = { ...userData, blendedRating: newTierData.min + 50 };
                             cardContainer.innerHTML = createCardHTML(newUserData, newTierData);
                             const newCard = cardContainer.querySelector('.fifa-card');
@@ -1335,24 +1896,17 @@
                             newCard.style.filter = 'brightness(2)';
                             newCard.style.transition = 'transform 0.8s ease, filter 0.5s ease';
                             
-                            // Star burst
                             starBurst.style.transition = 'all 0.5s ease';
                             starBurst.style.width = '800px';
                             starBurst.style.height = '800px';
                             starBurst.style.opacity = '0.8';
                         }},
-                        
-                        // Phase 6: Complete flip (1700ms)
                         { time: 1700, fn: () => {
                             const newCard = cardContainer.querySelector('.fifa-card');
                             newCard.style.transform = 'rotateY(0deg) scale(1)';
                             newCard.style.filter = 'brightness(1.5)';
-                            
-                            // More particles in new color
                             createParticles(particlesContainer, newTierData.color, 50);
                         }},
-                        
-                        // Phase 7: Show "RANK UP!" text (2000ms)
                         { time: 2000, fn: () => {
                             rankupText.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
                             rankupText.style.opacity = '1';
@@ -1361,39 +1915,27 @@
                             const newCard = cardContainer.querySelector('.fifa-card');
                             newCard.style.filter = 'brightness(1)';
                         }},
-                        
-                        // Phase 8: Show tier name (2500ms)
                         { time: 2500, fn: () => {
                             tierName.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
                             tierName.style.opacity = '1';
                             tierName.style.transform = 'scale(1)';
-                            
-                            // Glow pulse
                             glowRing.style.animation = 'glowPulse 1s ease infinite';
                         }},
-                        
-                        // Phase 9: Fade out star burst (3000ms)
                         { time: 3000, fn: () => {
                             starBurst.style.opacity = '0';
                             starBurst.style.width = '1000px';
                             starBurst.style.height = '1000px';
                         }},
-                        
-                        // Phase 10: Hold for viewing (4500ms)
                         { time: 4500, fn: () => {
-                            // Start fade out
                             rankupText.style.opacity = '0';
                             tierName.style.opacity = '0';
                             glowRing.style.opacity = '0';
                         }},
-                        
-                        // Phase 11: Close overlay (5000ms)
                         { time: 5000, fn: () => {
                             finishAnimation(resolve, newTierData);
                         }}
                     ];
 
-                    // Execute timeline
                     timeline.forEach(({ time, fn }) => {
                         animationTimers.push(setTimeout(fn, time));
                     });
@@ -1434,7 +1976,6 @@
                     });
                     
                     container.appendChild(particle);
-                    
                     setTimeout(() => particle.remove(), duration * 1000);
                 }
             }
@@ -1443,7 +1984,6 @@
                 const overlay = document.getElementById('rankup-overlay');
                 overlay.classList.remove('active');
                 
-                // Reset elements
                 setTimeout(() => {
                     document.getElementById('rankup-text').style.cssText = '';
                     document.getElementById('rankup-tier-name').style.cssText = '';
@@ -1526,11 +2066,15 @@
                     if (index === 2) row.classList.add('bronze-row');
                     if (entry.userId === selectedUserId) row.classList.add('active');
 
+                    const avatarContent = entry.avatar 
+                        ? `<img src="${entry.avatar}" alt="${entry.displayName || entry.userId}" onerror="this.parentElement.innerHTML='${getInitials(entry.displayName || entry.userId)}'">`
+                        : getInitials(entry.displayName || entry.userId);
+
                     row.innerHTML = `
                         <span class="lb-rank">${index + 1}</span>
-                        <div class="lb-avatar ${tier.id}">${getInitials(entry.userId)}</div>
+                        <div class="lb-avatar ${tier.id}">${avatarContent}</div>
                         <div class="lb-info">
-                            <div class="lb-name">${entry.userId}</div>
+                            <div class="lb-name">${entry.displayName || entry.userId}</div>
                             <div class="lb-tier">${tier.name}</div>
                         </div>
                         <span class="lb-rating">${ratingToOvr(entry.blendedRating)}</span>
@@ -1541,44 +2085,11 @@
                 });
             }
 
-            // Demo rank up function
-            function demoRankUp(fromTier, toTier) {
-                if (animationInProgress) return;
-                
-                const demoUser = {
-                    userId: 'demo_player',
-                    blendedRating: getTierById(fromTier).min + 50,
-                    rank: 42,
-                    stats: {
-                        engineering: { rating: 1500 },
-                        finance: { rating: 1400 },
-                        creative: { rating: 1600 },
-                        business_ops: { rating: 1450 },
-                        product: { rating: 1550 },
-                        research: { rating: 1350 }
-                    }
-                };
-
-                playRankUpAnimation(demoUser, fromTier, toTier).then((newTier) => {
-                    // Update the main card display after animation
-                    const updatedUser = { ...demoUser, blendedRating: newTier.min + 50 };
-                    const container = document.getElementById('card-container');
-                    container.innerHTML = createCardHTML(updatedUser, newTier);
-                });
-            }
-
-            /**
-             * PUBLIC API: Call this when a user's rating crosses a tier threshold
-             * @param {Object} userData - User data object
-             * @param {number} oldRating - Previous rating
-             * @param {number} newRating - New rating after update
-             * @returns {Promise} - Resolves when animation completes
-             */
+            // Demo functions exposed to window
             function onRatingUpdate(userData, oldRating, newRating) {
                 const oldTier = getTier(oldRating);
                 const newTier = getTier(newRating);
 
-                // Check if tier changed (rank up)
                 if (newTier.id !== oldTier.id && TIERS.indexOf(newTier) > TIERS.indexOf(oldTier)) {
                     return playRankUpAnimation(userData, oldTier.id, newTier.id);
                 }
@@ -1588,18 +2099,16 @@
 
             // Initialize
             function init() {
-                allUsers = [
-                    { userId: 'icon_ace', blendedRating: 3100, rank: 1, stats: { engineering: { rating: 3200 }, finance: { rating: 2980 }, creative: { rating: 3150 }, business_ops: { rating: 3020 }, product: { rating: 3180 }, research: { rating: 2850 } }},
-                    { userId: 'legend_lucy', blendedRating: 2800, rank: 2, stats: { engineering: { rating: 2950 }, finance: { rating: 2680 }, creative: { rating: 2850 }, business_ops: { rating: 2720 }, product: { rating: 2880 }, research: { rating: 2550 } }},
-                    { userId: 'diamond_dan', blendedRating: 2400, rank: 3, stats: { engineering: { rating: 2550 }, finance: { rating: 2280 }, creative: { rating: 2450 }, business_ops: { rating: 2320 }, product: { rating: 2480 }, research: { rating: 2150 } }},
-                    { userId: 'plat_player', blendedRating: 2000, rank: 4, stats: { engineering: { rating: 2150 }, finance: { rating: 1880 }, creative: { rating: 2050 }, business_ops: { rating: 1920 }, product: { rating: 2080 }, research: { rating: 1750 } }},
-                    { userId: 'gold_master', blendedRating: 1600, rank: 5, stats: { engineering: { rating: 1750 }, finance: { rating: 1450 }, creative: { rating: 1680 }, business_ops: { rating: 1520 }, product: { rating: 1650 }, research: { rating: 1380 } }},
-                    { userId: 'silver_sam', blendedRating: 1200, rank: 6, stats: { engineering: { rating: 1300 }, finance: { rating: 1100 }, creative: { rating: 1150 }, business_ops: { rating: 1180 }, product: { rating: 1250 }, research: { rating: 1050 } }},
-                    { userId: 'rookie_dev', blendedRating: 750, rank: 7, stats: { engineering: { rating: 800 }, finance: { rating: 650 }, creative: { rating: 700 }, business_ops: { rating: 680 }, product: { rating: 720 }, research: { rating: 600 } }},
-                ];
+                allUsers = [...USERS_DATA];
+                allUsers.sort((a, b) => b.blendedRating - a.blendedRating);
+                allUsers.forEach((u, i) => u.rank = i + 1);
 
                 renderLeaderboard(allUsers);
-                displayCard(allUsers[4].userId); // Start with gold_master
+                
+                // Auto-run the full workflow demo on page load
+                setTimeout(() => {
+                    demoFullWorkflow();
+                }, 800);
             }
 
             // Return public API
@@ -1607,7 +2116,7 @@
                 init,
                 displayCard,
                 renderLeaderboard,
-                demoRankUp,
+                demoFullWorkflow,
                 onRatingUpdate,
                 skipAnimation,
                 playRankUpAnimation,
