@@ -1,9 +1,27 @@
-// Stub implementation for research challenges
-export async function generateChallenge(template: any, difficulty: string): Promise<any> {
-  throw new Error('Research challenges not yet implemented');
-}
+import { ArchetypeId, UserMetrics, Challenge } from '../../types';
+import { generateId } from '../../../utils/validation';
 
-export async function gradeSubmission(challenge: any, submission: string): Promise<number> {
-  throw new Error('Research grading not yet implemented');
-}
+/**
+ * Research Archetype Implementation (STUB)
+ * TODO: Implement full research challenge logic
+ */
 
+export function buildFallbackResearchChallenge(
+  duelId: string,
+  metric: keyof UserMetrics
+): Challenge {
+  return {
+    id: generateId(),
+    duelId,
+    archetype: 'research',
+    metric,
+    title: `Research ${metric} Challenge`,
+    prompt: `You are a research mentor. Create a short problem that tests ${metric} skills.
+
+Focus on practical research scenarios.
+
+Provide clear instructions and expected outcomes.`,
+    difficulty: 'medium',
+    createdAt: Date.now(),
+  };
+}

@@ -1,13 +1,14 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { Duel, Challenge, Submission } from './types';
+import { Duel, Challenge, Submission, ArchetypeId, UserMetrics, SubmissionFeedback } from './types';
 import { generateId } from '../utils/validation';
 import { logger } from '../utils/logging';
 import { getOrCreateUserState, updateUserState } from './userStore';
 import { updateMetric, updateUserStats } from './statEngine';
 import { updateElo } from './eloEngine';
 import { updateRanks } from './leaderboardService';
-import { gradeSubmissionForDuel } from './challenge/engine';
+import * as challengeEngine from './challenge/engine';
+import { createSeriesClient } from '../messaging/seriesClient';
 
 const DATA_DIR = process.env.DATA_DIR || './data';
 const DUELS_FILE = join(DATA_DIR, 'duels.json');
@@ -21,26 +22,57 @@ export function getDuel(duelId: string): Duel | null {
 export function createDuel(
   challengerId: string,
   opponentId: string,
-  challenge: Challenge,
-  archetype: string,
+  archetype: ArchetypeId,
+  metric: keyof UserMetrics,
   durationMinutes: number
 ): Duel {
   const duel: Duel = {
     id: generateId(),
-    archetype: archetype as any,
-    metric: challenge.metric,
+    archetype,
+    metric,
     challengerId,
     opponentId,
     createdAt: Date.now(),
     durationMinutes,
-    status: 'pending',
+    status: 'active', // Start as active so timer can begin immediately
+    startTime: Date.now(), // Timer starts when duel is created
     scores: {},
+    feedback: {},
+    conversationIds: {}, // Will store conversationIds for messaging
   };
+  
+  // For demo: Add hardcoded challenger score/feedback (PERFECT SCORE)
+  // This simulates the challenger having already submitted with a perfect response
+  duel.feedback[challengerId] = {
+    score: 100,
+    feedback: 'Perfect implementation! This solution demonstrates exceptional understanding of Kadane\'s algorithm with flawless execution. The code is elegant, well-documented, handles all edge cases comprehensively, and includes thorough complexity analysis. The test cases are comprehensive and the solution is production-ready.',
+    strengths: [
+      'Perfect implementation of Kadane\'s algorithm',
+      'Comprehensive edge case handling (empty array, all negative, single element)',
+      'Crystal clear time complexity analysis (O(n)) with detailed explanation',
+      'Accurate space complexity (O(1)) with optimization notes',
+      'Exceptionally well-structured and readable code',
+      'Comprehensive test cases covering all scenarios',
+      'Production-ready code quality',
+      'Excellent documentation and comments'
+    ],
+    improvements: [], // Perfect score = no improvements needed
+    submittedAt: Date.now() - 60000, // Submitted 1 minute ago
+  };
+  duel.scores[challengerId] = 100;
   
   duelStore.set(duel.id, duel);
   saveDuels();
   
   return duel;
+}
+
+/**
+ * Ensure a challenge exists for a duel
+ * Generates challenge if it doesn't exist
+ */
+export async function ensureChallengeForDuel(duel: Duel): Promise<Challenge> {
+  return challengeEngine.startChallengeForDuel(duel);
 }
 
 export function acceptDuel(duelId: string, opponentId: string): Duel | null {
@@ -62,13 +94,53 @@ export function acceptDuel(duelId: string, opponentId: string): Duel | null {
 }
 
 export async function submitDuelAnswer(duelId: string, userId: string, answer: string): Promise<Duel | null> {
+  logger.info(`[SUBMIT] submitDuelAnswer called: duelId=${duelId}, userId=${userId}, answerLength=${answer.length}`);
+  
   const duel = duelStore.get(duelId);
   if (!duel) {
+    logger.error(`[SUBMIT] Duel ${duelId} not found`);
     return null;
   }
   
-  if (duel.status !== 'active') {
+  logger.info(`[SUBMIT] Duel found: challenger=${duel.challengerId}, opponent=${duel.opponentId}, status=${duel.status}`);
+  
+  // Check if user has already submitted
+  if (duel.scores[userId] !== undefined) {
+    logger.info(`[SUBMIT] User ${userId} has already submitted (score: ${duel.scores[userId]})`);
+    // Return the existing duel so they can see their results
+    return duel;
+  }
+  
+  // Timer stops when user submits - record submission time
+  // Allow submissions for 'active' duels, or 'pending' duels (will auto-activate)
+  if (duel.status !== 'active' && duel.status !== 'pending') {
+    logger.warn(`[SUBMIT] Duel ${duelId} is not active (status: ${duel.status})`);
     return null;
+  }
+  
+  // Auto-activate if pending
+  if (duel.status === 'pending') {
+    duel.status = 'active';
+    if (!duel.startTime) {
+      duel.startTime = Date.now();
+    }
+    logger.info(`[SUBMIT] Auto-activated duel ${duelId}`);
+  }
+  
+  // Check if this user is the challenger or opponent
+  const isChallenger = userId === duel.challengerId;
+  const isOpponent = userId === duel.opponentId;
+  
+  if (!isChallenger && !isOpponent) {
+    logger.error(`[SUBMIT] User ${userId} is not the challenger (${duel.challengerId}) or opponent (${duel.opponentId})`);
+    return null;
+  }
+  
+  logger.info(`[SUBMIT] User ${userId} is ${isChallenger ? 'challenger' : 'opponent'}`);
+  
+  // Record when this user submitted (timer stops for them)
+  if (!duel.feedback) {
+    duel.feedback = {};
   }
   
   // Create submission
@@ -80,12 +152,24 @@ export async function submitDuelAnswer(duelId: string, userId: string, answer: s
     submittedAt: Date.now(),
   };
   
-  // Grade the submission
-  const score = await gradeSubmissionForDuel(duel, submission);
-  submission.score = score;
+  // Calculate time elapsed when user submitted (timer stops)
+  const timeElapsed = duel.startTime ? Math.floor((submission.submittedAt - duel.startTime) / 1000) : 0;
   
-  // Store score
-  duel.scores[userId] = score;
+  // Grade the submission (now returns { score, feedback, strengths, improvements })
+  const gradingResult = await challengeEngine.gradeSubmissionForDuel(duel, submission);
+  submission.score = gradingResult.score;
+  
+  // Store score and feedback (including time elapsed)
+  duel.scores[userId] = gradingResult.score;
+  duel.feedback[userId] = {
+    score: gradingResult.score,
+    feedback: gradingResult.feedback,
+    strengths: gradingResult.strengths,
+    improvements: gradingResult.improvements,
+    submittedAt: submission.submittedAt,
+    timeElapsed: timeElapsed,
+  };
+  
   duelStore.set(duelId, duel);
   saveDuels();
   
@@ -93,11 +177,31 @@ export async function submitDuelAnswer(duelId: string, userId: string, answer: s
   const challengerScore = duel.scores[duel.challengerId];
   const opponentScore = duel.scores[duel.opponentId];
   
+  logger.info(`[DUEL] Checking submissions: challenger=${challengerScore !== undefined ? challengerScore : 'none'}, opponent=${opponentScore !== undefined ? opponentScore : 'none'}`);
+  
   if (challengerScore !== undefined && opponentScore !== undefined) {
+    logger.info(`[DUEL] Both have submitted! Finalizing duel ${duel.id}...`);
     await finalizeDuel(duel);
+    logger.info(`[DUEL] Duel ${duel.id} finalized`);
+  } else {
+    logger.info(`[DUEL] Waiting for both submissions. Challenger: ${challengerScore !== undefined ? 'submitted' : 'pending'}, Opponent: ${opponentScore !== undefined ? 'submitted' : 'pending'}`);
   }
   
   return duel;
+}
+
+/**
+ * Store conversationId for a user in a duel (for sending messages)
+ */
+export function setDuelConversationId(duelId: string, userId: string, conversationId: string): void {
+  const duel = duelStore.get(duelId);
+  if (duel) {
+    if (!duel.conversationIds) {
+      duel.conversationIds = {};
+    }
+    duel.conversationIds[userId] = conversationId;
+    saveDuels();
+  }
 }
 
 async function finalizeDuel(duel: Duel): Promise<void> {
@@ -106,6 +210,9 @@ async function finalizeDuel(duel: Duel): Promise<void> {
   
   duel.status = 'finished';
   duel.endTime = Date.now();
+  
+  // Send comparison message via Series API if conversationIds are available
+  await sendComparisonMessage(duel);
   
   // Determine winner
   if (challengerScore > opponentScore) {
@@ -146,6 +253,89 @@ async function finalizeDuel(duel: Duel): Promise<void> {
   
   duelStore.set(duel.id, duel);
   saveDuels();
+}
+
+/**
+ * Send comparison message to both users via Series API
+ */
+async function sendComparisonMessage(duel: Duel): Promise<void> {
+  if (!duel.conversationIds || Object.keys(duel.conversationIds).length === 0) {
+    logger.warn(`No conversationIds stored for duel ${duel.id}, skipping comparison message`);
+    return;
+  }
+  
+  const challengerScore = duel.scores[duel.challengerId] || 0;
+  const opponentScore = duel.scores[duel.opponentId] || 0;
+  const challengerFeedback = duel.feedback?.[duel.challengerId];
+  const opponentFeedback = duel.feedback?.[duel.opponentId];
+  
+  if (!challengerFeedback || !opponentFeedback) {
+    logger.warn(`Missing feedback for duel ${duel.id}, skipping comparison message`);
+    return;
+  }
+  
+  // Determine winner
+  let winner: string;
+  if (challengerScore > opponentScore) {
+    winner = duel.challengerId;
+  } else if (opponentScore > challengerScore) {
+    winner = duel.opponentId;
+  } else {
+    winner = 'draw';
+  }
+  
+  // Build comparison message
+  let message = `🏆 Duel Results\n\n`;
+  message += `Challenger: ${challengerScore}/100\n`;
+  message += `You: ${opponentScore}/100\n\n`;
+  
+  if (winner === 'draw') {
+    message += `🤝 It's a Draw!\n\n`;
+  } else if (winner === duel.opponentId) {
+    message += `🎉 You Won!\n\n`;
+  } else {
+    message += `📊 Challenger Won\n\n`;
+  }
+  
+  // Add perfect score badges
+  if (challengerScore === 100) {
+    message += `⭐ Challenger achieved PERFECT SCORE!\n`;
+  }
+  if (opponentScore === 100) {
+    message += `⭐ You achieved PERFECT SCORE!\n`;
+  }
+  
+  message += `\n💬 Connect & Discuss Your Approaches!\n\n`;
+  message += `Great work on completing the challenge! Both solutions show unique approaches and insights. `;
+  message += `Connect with your opponent to discuss different strategies, learn from each other's solutions, `;
+  message += `and share insights about your problem-solving approaches.\n\n`;
+  message += `Use !connect in Series chat to find similar players!`;
+  
+  // Send to opponent (the one who just submitted via web)
+  const opponentConversationId = duel.conversationIds[duel.opponentId];
+  if (opponentConversationId) {
+    try {
+      const client = createSeriesClient();
+      await client.sendMessageToConversation(opponentConversationId, message);
+      logger.info(`✅ Sent comparison message to opponent (conversation ${opponentConversationId})`);
+    } catch (error: any) {
+      logger.error(`❌ Failed to send comparison message to opponent:`, error);
+    }
+  } else {
+    logger.warn(`No conversationId found for opponent ${duel.opponentId}`);
+  }
+  
+  // Also send to challenger if they have a conversationId
+  const challengerConversationId = duel.conversationIds[duel.challengerId];
+  if (challengerConversationId) {
+    try {
+      const client = createSeriesClient();
+      await client.sendMessageToConversation(challengerConversationId, message);
+      logger.info(`✅ Sent comparison message to challenger (conversation ${challengerConversationId})`);
+    } catch (error: any) {
+      logger.error(`❌ Failed to send comparison message to challenger:`, error);
+    }
+  }
 }
 
 export function getUserDuels(userId: string): Duel[] {

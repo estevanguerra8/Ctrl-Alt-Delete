@@ -22,12 +22,15 @@ export class SeriesClient {
     this.apiKey = apiKey;
     this.senderNumber = senderNumber || process.env.SERIES_SENDER_NUMBER || '';
     
+    // Create axios instance with timeout
+    // Each client instance gets its own connection pool to avoid blocking
     this.client = axios.create({
       baseURL: baseUrl,
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
+      timeout: 10000, // 10 second timeout for faster responses
     });
   }
 
@@ -49,17 +52,20 @@ export class SeriesClient {
     // conversationId from Kafka is the chat_id (should be an integer or string representation)
     const chatId = conversationId;
     
-    logger.info(`📤 Sending to chat ${chatId}: "${text.substring(0, 30)}..."`);
+    logger.info(`📤 Sending to chat ${chatId}: "${text.substring(0, 50)}..."`);
+    
+    // Use the exact payload format from Series API docs
+    const payload = {
+      message: {
+        text: text,
+      },
+    };
     
     try {
-      // Use the correct endpoint and payload structure from API docs
-      const response = await this.client.post(`/api/chats/${chatId}/chat_messages`, {
-        message: {
-          text: text,
-        },
-      });
+      const response = await this.client.post(`/api/chats/${chatId}/chat_messages`, payload);
       
-      logger.info(`✅ Sent to chat ${chatId} (message ID: ${response.data?.data?.id || 'N/A'})`);
+      logger.info(`✅ Sent to chat ${chatId} (status: ${response.status}, message ID: ${response.data?.data?.id || response.data?.id || 'N/A'})`);
+      
       return response.data || {};
     } catch (error: any) {
       const errorMsg = error.response?.data || error.message;

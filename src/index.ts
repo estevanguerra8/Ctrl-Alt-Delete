@@ -32,16 +32,19 @@ async function main() {
   // Start Kafka consumer with async handleEvent function
   // Configure brokers, SASL, and topic names according to Series Hackathon Dashboard.pdf
   startConsumer(async (event: AppEvent) => {
-    try {
-      if (event.type === 'inbound_message') {
-        // Pass to commands/router.ts
-        await processInboundMessage(event);
-      } else if (event.type === 'stat_update') {
-        // Update user via statEngine, recompute Elo, rebuild leaderboards, send notifications
-        await handleStatUpdate(event as AppEvent & { type: 'stat_update' });
-      }
-    } catch (error: any) {
-      logger.error('Error handling event:', error);
+    logger.info(`🔄 [INDEX] handleEvent called for event type: ${event.type}`);
+    // CRITICAL: AWAIT to ensure each message completes fully before next one starts
+    // This ensures each command gets its response before the next command is processed
+    if (event.type === 'inbound_message') {
+      logger.info(`🔄 [INDEX] Processing inbound_message...`);
+      // AWAIT to ensure full processing (including response sent) before next message
+      await processInboundMessage(event);
+      logger.info(`✅ [INDEX] processInboundMessage completed`);
+    } else if (event.type === 'stat_update') {
+      logger.info(`🔄 [INDEX] Processing stat_update...`);
+      // AWAIT stat update processing
+      await handleStatUpdate(event as AppEvent & { type: 'stat_update' });
+      logger.info(`✅ [INDEX] handleStatUpdate completed`);
     }
   }).catch((error) => {
     logger.error('Failed to start Kafka consumer:', error);

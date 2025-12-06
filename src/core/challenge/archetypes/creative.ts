@@ -1,9 +1,27 @@
-// Stub implementation for creative challenges
-export async function generateChallenge(template: any, difficulty: string): Promise<any> {
-  throw new Error('Creative challenges not yet implemented');
-}
+import { ArchetypeId, UserMetrics, Challenge } from '../../types';
+import { generateId } from '../../../utils/validation';
 
-export async function gradeSubmission(challenge: any, submission: string): Promise<number> {
-  throw new Error('Creative grading not yet implemented');
-}
+/**
+ * Creative Archetype Implementation (STUB)
+ * TODO: Implement full creative challenge logic
+ */
 
+export function buildFallbackCreativeChallenge(
+  duelId: string,
+  metric: keyof UserMetrics
+): Challenge {
+  return {
+    id: generateId(),
+    duelId,
+    archetype: 'creative',
+    metric,
+    title: `Creative ${metric} Challenge`,
+    prompt: `You are a creative mentor. Create a short project brief that tests ${metric} skills.
+
+Focus on practical, real-world creative scenarios.
+
+Provide clear instructions and expected outcomes.`,
+    difficulty: 'medium',
+    createdAt: Date.now(),
+  };
+}

@@ -1,9 +1,27 @@
-// Stub implementation for business_ops challenges
-export async function generateChallenge(template: any, difficulty: string): Promise<any> {
-  throw new Error('Business ops challenges not yet implemented');
-}
+import { ArchetypeId, UserMetrics, Challenge } from '../../types';
+import { generateId } from '../../../utils/validation';
 
-export async function gradeSubmission(challenge: any, submission: string): Promise<number> {
-  throw new Error('Business ops grading not yet implemented');
-}
+/**
+ * Business Ops Archetype Implementation (STUB)
+ * TODO: Implement full business_ops challenge logic
+ */
 
+export function buildFallbackBusinessOpsChallenge(
+  duelId: string,
+  metric: keyof UserMetrics
+): Challenge {
+  return {
+    id: generateId(),
+    duelId,
+    archetype: 'business_ops',
+    metric,
+    title: `Business Ops ${metric} Challenge`,
+    prompt: `You are a business operations mentor. Create a short case study that tests ${metric} skills.
+
+Focus on practical operational scenarios.
+
+Provide clear instructions and expected outcomes.`,
+    difficulty: 'medium',
+    createdAt: Date.now(),
+  };
+}

@@ -15,7 +15,9 @@
     "overallScore": 50,
     "streakDays": 0,
     "lastActiveAt": 1765006167373,
-    "ranks": {}
+    "ranks": {
+      "overall": 1
+    }
   },
   {
     "userId": "testuser123",
@@ -33,7 +35,9 @@
     "overallScore": 50,
     "streakDays": 0,
     "lastActiveAt": 1765006219522,
-    "ranks": {}
+    "ranks": {
+      "overall": 2
+    }
   },
   {
     "userId": "testuser",
@@ -51,42 +55,68 @@
     "overallScore": 50,
     "streakDays": 0,
     "lastActiveAt": 1765007646627,
-    "ranks": {}
+    "ranks": {
+      "overall": 3
+    }
   },
   {
     "userId": "+17868735256",
     "archetype": "engineering",
     "metrics": {
-      "technical": 50,
+      "technical": 55,
       "strategy": 50,
       "execution": 50,
       "aura": 50,
       "experience": 50
     },
-    "duelElo": 1000,
-    "finalElo": 1000,
+    "duelElo": 1015,
+    "finalElo": 861,
     "tier": "Bronze",
-    "overallScore": 50,
+    "overallScore": 51,
     "streakDays": 0,
-    "lastActiveAt": 1765010074608,
-    "ranks": {}
+    "lastActiveAt": 1765034371263,
+    "ranks": {
+      "overall": 5
+    }
   },
   {
     "userId": "+12144988136",
     "archetype": "engineering",
     "metrics": {
-      "technical": 50,
+      "technical": 60,
       "strategy": 50,
       "execution": 50,
       "aura": 50,
       "experience": 50
     },
-    "duelElo": 1000,
-    "finalElo": 1000,
+    "duelElo": 1031,
+    "finalElo": 875,
     "tier": "Bronze",
-    "overallScore": 50,
+    "overallScore": 52,
     "streakDays": 0,
-    "lastActiveAt": 1765010221086,
-    "ranks": {}
+    "lastActiveAt": 1765035680601,
+    "ranks": {
+      "overall": 4
+    }
+  },
+  {
+    "userId": "+16463458837",
+    "archetype": "engineering",
+    "metrics": {
+      "technical": 44,
+      "strategy": 50,
+      "execution": 50,
+      "aura": 50,
+      "experience": 50
+    },
+    "duelElo": 954,
+    "finalElo": 815,
+    "tier": "Bronze",
+    "overallScore": 49,
+    "streakDays": 0,
+    "lastActiveAt": 1765032514897,
+    "ranks": {
+      "overall": 6
+    }
   }
 ]

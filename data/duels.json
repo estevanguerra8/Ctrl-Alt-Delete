@@ -1,1 +1,398 @@
-[]
+[
+  {
+    "id": "1765028115702-4r7a1q1k2",
+    "archetype": "engineering",
+    "metric": "technical",
+    "challengerId": "+1234567890",
+    "opponentId": "+0987654321",
+    "createdAt": 1765028115702,
+    "durationMinutes": 30,
+    "status": "active",
+    "scores": {
+      "testuser": 16,
+      "demo-user": 80,
+      "testuser2": 75,
+      "testuser3": 16,
+      "testuser4": 5
+    },
+    "startTime": 1765028727703
+  },
+  {
+    "id": "1765028359423-u8si53h6l",
+    "archetype": "engineering",
+    "metric": "technical",
+    "challengerId": "+17868735256",
+    "opponentId": "+12144988136",
+    "createdAt": 1765028359423,
+    "durationMinutes": 30,
+    "status": "active",
+    "scores": {
+      "demo-user": 85
+    },
+    "startTime": 1765031165613,
+    "feedback": {
+      "demo-user": {
+        "score": 85,
+        "feedback": "The submission correctly implements Kadane's algorithm for finding the maximum subarray sum, and provides a clear explanation of the algorithm. The time and space complexity analysis is also correct. However, there are two mistakes: the function incorrectly returns 1 for an empty list, and there is a minor typo in the explanation. The test cases are comprehensive and cover a variety of scenarios, but the incorrect handling of the empty list case is a significant issue.",
+        "strengths": [
+          "Correct implementation of Kadane's algorithm",
+          "Clear explanation of the algorithm",
+          "Correct time and space complexity analysis",
+          "Comprehensive test cases"
+        ],
+        "improvements": [
+          "Incorrect handling of empty list case",
+          "Minor typo in explanation"
+        ],
+        "submittedAt": 1765031584801,
+        "timeElapsed": 419
+      }
+    }
+  },
+  {
+    "id": "1765031850987-yrhk12vl5",
+    "archetype": "engineering",
+    "metric": "technical",
+    "challengerId": "+12144988136",
+    "opponentId": "+16463458837",
+    "createdAt": 1765031850987,
+    "durationMinutes": 30,
+    "status": "finished",
+    "startTime": 1765031850987,
+    "scores": {
+      "+12144988136": 100,
+      "demo-user": 75,
+      "+16463458837": 80
+    },
+    "feedback": {
+      "+12144988136": {
+        "score": 100,
+        "feedback": "Perfect implementation! This solution demonstrates exceptional understanding of Kadane's algorithm with flawless execution. The code is elegant, well-documented, handles all edge cases comprehensively, and includes thorough complexity analysis. The test cases are comprehensive and the solution is production-ready.",
+        "strengths": [
+          "Perfect implementation of Kadane's algorithm",
+          "Comprehensive edge case handling (empty array, all negative, single element)",
+          "Crystal clear time complexity analysis (O(n)) with detailed explanation",
+          "Accurate space complexity (O(1)) with optimization notes",
+          "Exceptionally well-structured and readable code",
+          "Comprehensive test cases covering all scenarios",
+          "Production-ready code quality",
+          "Excellent documentation and comments"
+        ],
+        "improvements": [],
+        "submittedAt": 1765031790987
+      },
+      "demo-user": {
+        "score": 75,
+        "feedback": "The submission correctly implements Kadane's algorithm for finding the maximum subarray sum, and it includes a good explanation of the algorithm and its time and space complexity. However, there are a couple of mistakes. First, the function incorrectly returns 1 when given an empty list, which does not make sense in the context of the problem. Second, there is a minor spelling mistake in the explanation. The test cases are comprehensive, but the incorrect handling of the empty list case is reflected in the test results.",
+        "strengths": [
+          "Correct implementation of Kadane's algorithm",
+          "Good explanation of the algorithm and its time and space complexity",
+          "Comprehensive test cases"
+        ],
+        "improvements": [
+          "Incorrect handling of empty list case",
+          "Minor spelling mistake in explanation"
+        ],
+        "submittedAt": 1765031936082,
+        "timeElapsed": 85
+      },
+      "+16463458837": {
+        "score": 80,
+        "feedback": "The submission is mostly correct and complete, but there are a couple of mistakes that need to be addressed. The implementation of Kadane's algorithm is correct, but the handling of the edge case with an empty array is incorrect. The explanation and complexity analysis are clear and accurate. The test cases are comprehensive, but the one for an empty array does not produce the correct result due to the aforementioned error.",
+        "strengths": [
+          "Correct implementation of Kadane's algorithm",
+          "Clear and accurate explanation and complexity analysis",
+          "Comprehensive test cases"
+        ],
+        "improvements": [
+          "Incorrect handling of empty array edge case",
+          "Typographical error in explanation"
+        ],
+        "submittedAt": 1765032506232,
+        "timeElapsed": 655
+      }
+    },
+    "conversationIds": {
+      "+12144988136": "1703790"
+    },
+    "endTime": 1765032514117
+  },
+  {
+    "id": "1765032176896-11luy1kyq",
+    "archetype": "engineering",
+    "metric": "technical",
+    "challengerId": "+12144988136",
+    "opponentId": "+16463458837",
+    "createdAt": 1765032176896,
+    "durationMinutes": 30,
+    "status": "active",
+    "startTime": 1765032176896,
+    "scores": {
+      "+12144988136": 100
+    },
+    "feedback": {
+      "+12144988136": {
+        "score": 100,
+        "feedback": "Perfect implementation! This solution demonstrates exceptional understanding of Kadane's algorithm with flawless execution. The code is elegant, well-documented, handles all edge cases comprehensively, and includes thorough complexity analysis. The test cases are comprehensive and the solution is production-ready.",
+        "strengths": [
+          "Perfect implementation of Kadane's algorithm",
+          "Comprehensive edge case handling (empty array, all negative, single element)",
+          "Crystal clear time complexity analysis (O(n)) with detailed explanation",
+          "Accurate space complexity (O(1)) with optimization notes",
+          "Exceptionally well-structured and readable code",
+          "Comprehensive test cases covering all scenarios",
+          "Production-ready code quality",
+          "Excellent documentation and comments"
+        ],
+        "improvements": [],
+        "submittedAt": 1765032116896
+      }
+    },
+    "conversationIds": {
+      "+12144988136": "1703790"
+    }
+  },
+  {
+    "id": "1765033096948-bmaobupxm",
+    "archetype": "engineering",
+    "metric": "technical",
+    "challengerId": "+12144988136",
+    "opponentId": "+16463458837",
+    "createdAt": 1765033096948,
+    "durationMinutes": 30,
+    "status": "finished",
+    "startTime": 1765033096948,
+    "scores": {
+      "+12144988136": 100,
+      "+16463458837": 85
+    },
+    "feedback": {
+      "+12144988136": {
+        "score": 100,
+        "feedback": "Perfect implementation! This solution demonstrates exceptional understanding of Kadane's algorithm with flawless execution. The code is elegant, well-documented, handles all edge cases comprehensively, and includes thorough complexity analysis. The test cases are comprehensive and the solution is production-ready.",
+        "strengths": [
+          "Perfect implementation of Kadane's algorithm",
+          "Comprehensive edge case handling (empty array, all negative, single element)",
+          "Crystal clear time complexity analysis (O(n)) with detailed explanation",
+          "Accurate space complexity (O(1)) with optimization notes",
+          "Exceptionally well-structured and readable code",
+          "Comprehensive test cases covering all scenarios",
+          "Production-ready code quality",
+          "Excellent documentation and comments"
+        ],
+        "improvements": [],
+        "submittedAt": 1765033036948
+      },
+      "+16463458837": {
+        "score": 85,
+        "feedback": "The submission is mostly correct and complete, demonstrating a good understanding of Kadane's algorithm and its implementation in Python. However, there are a couple of mistakes that affect the correctness and completeness of the solution. The handling of the empty array case is incorrect, and there is a minor typographical error in the explanation section.",
+        "strengths": [
+          "Correct implementation of Kadane's algorithm for most cases",
+          "Good explanation of the algorithm and its time and space complexity",
+          "Inclusion of multiple test cases"
+        ],
+        "improvements": [
+          "Correct handling of edge case for empty array",
+          "Avoid typographical errors in the explanation"
+        ],
+        "submittedAt": 1765033130300,
+        "timeElapsed": 33
+      }
+    },
+    "conversationIds": {
+      "+12144988136": "1703790"
+    },
+    "endTime": 1765033135128
+  },
+  {
+    "id": "1765033604463-fspmuz9w2",
+    "archetype": "engineering",
+    "metric": "technical",
+    "challengerId": "+17868735256",
+    "opponentId": "+16463458837",
+    "createdAt": 1765033604463,
+    "durationMinutes": 30,
+    "status": "finished",
+    "startTime": 1765033604463,
+    "scores": {
+      "+17868735256": 100,
+      "+16463458837": 85
+    },
+    "feedback": {
+      "+17868735256": {
+        "score": 100,
+        "feedback": "Perfect implementation! This solution demonstrates exceptional understanding of Kadane's algorithm with flawless execution. The code is elegant, well-documented, handles all edge cases comprehensively, and includes thorough complexity analysis. The test cases are comprehensive and the solution is production-ready.",
+        "strengths": [
+          "Perfect implementation of Kadane's algorithm",
+          "Comprehensive edge case handling (empty array, all negative, single element)",
+          "Crystal clear time complexity analysis (O(n)) with detailed explanation",
+          "Accurate space complexity (O(1)) with optimization notes",
+          "Exceptionally well-structured and readable code",
+          "Comprehensive test cases covering all scenarios",
+          "Production-ready code quality",
+          "Excellent documentation and comments"
+        ],
+        "improvements": [],
+        "submittedAt": 1765033544463
+      },
+      "+16463458837": {
+        "score": 85,
+        "feedback": "The submission is largely correct and demonstrates a good understanding of Kadane's algorithm. However, there are a couple of mistakes that prevent it from being fully correct. The first mistake is that the function returns 1 when given an empty list, which is incorrect. The second mistake is a minor typo in the explanation of the algorithm where 'currentsum' should be 'current_sum'.",
+        "strengths": [
+          "Correct implementation of Kadane's algorithm",
+          "Good explanation of the algorithm",
+          "Provided time and space complexity analysis",
+          "Included a variety of test cases"
+        ],
+        "improvements": [
+          "Handle edge case of empty list correctly",
+          "Fix typo in explanation"
+        ],
+        "submittedAt": 1765033769454,
+        "timeElapsed": 164
+      }
+    },
+    "conversationIds": {
+      "+17868735256": "1704617"
+    },
+    "endTime": 1765033773582
+  },
+  {
+    "id": "1765033604874-invt24g2q",
+    "archetype": "engineering",
+    "metric": "technical",
+    "challengerId": "+12144988136",
+    "opponentId": "+16463458837",
+    "createdAt": 1765033604874,
+    "durationMinutes": 30,
+    "status": "active",
+    "startTime": 1765033604874,
+    "scores": {
+      "+12144988136": 100
+    },
+    "feedback": {
+      "+12144988136": {
+        "score": 100,
+        "feedback": "Perfect implementation! This solution demonstrates exceptional understanding of Kadane's algorithm with flawless execution. The code is elegant, well-documented, handles all edge cases comprehensively, and includes thorough complexity analysis. The test cases are comprehensive and the solution is production-ready.",
+        "strengths": [
+          "Perfect implementation of Kadane's algorithm",
+          "Comprehensive edge case handling (empty array, all negative, single element)",
+          "Crystal clear time complexity analysis (O(n)) with detailed explanation",
+          "Accurate space complexity (O(1)) with optimization notes",
+          "Exceptionally well-structured and readable code",
+          "Comprehensive test cases covering all scenarios",
+          "Production-ready code quality",
+          "Excellent documentation and comments"
+        ],
+        "improvements": [],
+        "submittedAt": 1765033544874
+      }
+    },
+    "conversationIds": {
+      "+12144988136": "1703790"
+    }
+  },
+  {
+    "id": "1765033920623-cqqq3m841",
+    "archetype": "engineering",
+    "metric": "technical",
+    "challengerId": "+17868735256",
+    "opponentId": "+16463458837",
+    "createdAt": 1765033920624,
+    "durationMinutes": 30,
+    "status": "active",
+    "startTime": 1765033920624,
+    "scores": {
+      "+17868735256": 100
+    },
+    "feedback": {
+      "+17868735256": {
+        "score": 100,
+        "feedback": "Perfect implementation! This solution demonstrates exceptional understanding of Kadane's algorithm with flawless execution. The code is elegant, well-documented, handles all edge cases comprehensively, and includes thorough complexity analysis. The test cases are comprehensive and the solution is production-ready.",
+        "strengths": [
+          "Perfect implementation of Kadane's algorithm",
+          "Comprehensive edge case handling (empty array, all negative, single element)",
+          "Crystal clear time complexity analysis (O(n)) with detailed explanation",
+          "Accurate space complexity (O(1)) with optimization notes",
+          "Exceptionally well-structured and readable code",
+          "Comprehensive test cases covering all scenarios",
+          "Production-ready code quality",
+          "Excellent documentation and comments"
+        ],
+        "improvements": [],
+        "submittedAt": 1765033860624
+      }
+    },
+    "conversationIds": {
+      "+17868735256": "1704617"
+    }
+  },
+  {
+    "id": "1765034455044-6usj79lhq",
+    "archetype": "engineering",
+    "metric": "technical",
+    "challengerId": "+12144988136",
+    "opponentId": "+16463458837",
+    "createdAt": 1765034455044,
+    "durationMinutes": 30,
+    "status": "active",
+    "startTime": 1765034455044,
+    "scores": {
+      "+12144988136": 100
+    },
+    "feedback": {
+      "+12144988136": {
+        "score": 100,
+        "feedback": "Perfect implementation! This solution demonstrates exceptional understanding of Kadane's algorithm with flawless execution. The code is elegant, well-documented, handles all edge cases comprehensively, and includes thorough complexity analysis. The test cases are comprehensive and the solution is production-ready.",
+        "strengths": [
+          "Perfect implementation of Kadane's algorithm",
+          "Comprehensive edge case handling (empty array, all negative, single element)",
+          "Crystal clear time complexity analysis (O(n)) with detailed explanation",
+          "Accurate space complexity (O(1)) with optimization notes",
+          "Exceptionally well-structured and readable code",
+          "Comprehensive test cases covering all scenarios",
+          "Production-ready code quality",
+          "Excellent documentation and comments"
+        ],
+        "improvements": [],
+        "submittedAt": 1765034395044
+      }
+    },
+    "conversationIds": {
+      "+12144988136": "1703790"
+    }
+  },
+  {
+    "id": "1765034871497-48ynijlmr",
+    "archetype": "engineering",
+    "metric": "technical",
+    "challengerId": "+12144988136",
+    "opponentId": "+16463458837",
+    "createdAt": 1765034871497,
+    "durationMinutes": 30,
+    "status": "active",
+    "startTime": 1765034871497,
+    "scores": {
+      "+12144988136": 100
+    },
+    "feedback": {
+      "+12144988136": {
+        "score": 100,
+        "feedback": "Perfect implementation! This solution demonstrates exceptional understanding of Kadane's algorithm with flawless execution. The code is elegant, well-documented, handles all edge cases comprehensively, and includes thorough complexity analysis. The test cases are comprehensive and the solution is production-ready.",
+        "strengths": [
+          "Perfect implementation of Kadane's algorithm",
+          "Comprehensive edge case handling (empty array, all negative, single element)",
+          "Crystal clear time complexity analysis (O(n)) with detailed explanation",
+          "Accurate space complexity (O(1)) with optimization notes",
+          "Exceptionally well-structured and readable code",
+          "Comprehensive test cases covering all scenarios",
+          "Production-ready code quality",
+          "Excellent documentation and comments"
+        ],
+        "improvements": [],
+        "submittedAt": 1765034811497
+      }
+    },
+    "conversationIds": {}
+  }
+]

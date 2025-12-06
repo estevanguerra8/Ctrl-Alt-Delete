@@ -3,8 +3,10 @@
     {
       "id": "eng-001",
       "title": "Optimize Array Processing",
-      "description": "Given an array of integers, write a function that finds the maximum subarray sum using Kadane's algorithm.",
+      "description": "Given an array of integers, write a function that finds the maximum subarray sum using Kadane's algorithm.\n\nRequirements:\n- Provide time and space complexity analysis\n- Handle edge cases (empty array, all negative numbers, etc.)\n- Include test cases with your solution",
+      "prompt": "Given an array of integers, write a function that finds the maximum subarray sum using Kadane's algorithm.\n\nRequirements:\n- Provide time and space complexity analysis\n- Handle edge cases (empty array, all negative numbers, etc.)\n- Include test cases with your solution",
       "difficulty": "medium",
+      "metric": "technical",
       "timeLimit": 30,
       "testCases": [
         {
@@ -17,10 +19,21 @@
     {
       "id": "eng-002",
       "title": "Design a Cache System",
-      "description": "Design an LRU (Least Recently Used) cache with O(1) time complexity for both get and put operations.",
+      "description": "Design an LRU (Least Recently Used) cache with O(1) time complexity for both get and put operations.\n\nRequirements:\n- Provide architecture and data structures\n- Explain time/space complexity\n- Handle edge cases",
+      "prompt": "Design an LRU (Least Recently Used) cache with O(1) time complexity for both get and put operations.\n\nRequirements:\n- Provide architecture and data structures\n- Explain time/space complexity\n- Handle edge cases",
       "difficulty": "hard",
+      "metric": "strategy",
       "timeLimit": 45,
       "criteria": ["design_quality", "correctness", "efficiency"]
+    },
+    {
+      "id": "eng-003",
+      "title": "Code Review Challenge",
+      "description": "Review and refactor the provided code snippet for better readability, performance, and error handling.",
+      "prompt": "Review and refactor the following code snippet:\n\n```javascript\nfunction processData(data) {\n  let result = [];\n  for (let i = 0; i < data.length; i++) {\n    if (data[i].status === 'active') {\n      result.push(data[i].value * 2);\n    }\n  }\n  return result;\n}\n```\n\nTasks:\n1. Identify potential issues and improvements\n2. Refactor the code for better readability and performance\n3. Add error handling\n4. Write unit tests",
+      "difficulty": "easy",
+      "metric": "execution",
+      "timeLimit": 20
     }
   ],
   "finance": [],
@@ -29,4 +42,3 @@
   "product": [],
   "research": []
 }
-

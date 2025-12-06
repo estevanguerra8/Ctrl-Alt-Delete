@@ -37,6 +37,15 @@ export interface UserState {
 
 export type DuelStatus = "pending" | "active" | "finished";
 
+export interface SubmissionFeedback {
+  score: number;
+  feedback: string;
+  strengths: string[];
+  improvements: string[];
+  submittedAt: number;
+  timeElapsed?: number; // Time elapsed when submitted (in seconds)
+}
+
 export interface Duel {
   id: string;
   archetype: ArchetypeId;
@@ -44,11 +53,13 @@ export interface Duel {
   challengerId: string;
   opponentId: string;
   createdAt: number;
-  startTime?: number;
+  startTime?: number; // Timer starts on first submission
   endTime?: number;
   durationMinutes: number;
   status: DuelStatus;
   scores: Record<string, number>;
+  feedback: Record<string, SubmissionFeedback>; // Store feedback for each user
+  conversationIds?: Record<string, string>; // Map userId -> conversationId for sending messages
 }
 
 export interface StatCardMetric {

@@ -1,0 +1,10 @@
+{
+  "id": "1765030100488-c68s1fdq2",
+  "duelId": "1765028115702-4r7a1q1k2",
+  "archetype": "engineering",
+  "metric": "technical",
+  "title": "Optimize Array Processing",
+  "prompt": "Given an array of integers, write a function that finds the maximum subarray sum using Kadane's algorithm.\n\nRequirements:\n- Provide time and space complexity analysis\n- Handle edge cases (empty array, all negative numbers, etc.)\n- Include test cases with your solution",
+  "difficulty": "medium",
+  "createdAt": 1765030100488
+}
