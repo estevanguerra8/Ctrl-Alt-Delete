@@ -1,8 +1,9 @@
 import express, { Express } from 'express';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { statcardRoutes } from './statcardRoutes';
 import { duelRoutes } from './duelRoutes';
 import { webhookRoutes } from './webhookRoutes';
+import { leaderboardRoutes } from './leaderboardRoutes';
 import { logger } from '../utils/logging';
 
 export async function startHttpServer(port: number): Promise<void> {
@@ -12,14 +13,24 @@ export async function startHttpServer(port: number): Promise<void> {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   
-  // Static files
-  const publicDir = join(__dirname, '../../public');
+  // Static files - go up 3 levels from dist/src/api to project root, then into public
+  const publicDir = resolve(__dirname, '../../../public');
   app.use(express.static(publicDir));
   
   // API routes
   app.use('/api/statcard', statcardRoutes);
+  app.use('/api/leaderboard', leaderboardRoutes);
   app.use('/duel', duelRoutes);
   app.use('/webhook', webhookRoutes);
+  
+  // Page routes - serve HTML files without extension
+  app.get('/statcard', (req, res) => {
+    res.sendFile(join(publicDir, 'statcard.html'));
+  });
+  
+  app.get('/card', (req, res) => {
+    res.sendFile(join(publicDir, 'card-embed.html'));
+  });
   
   // Health check
   app.get('/health', (req, res) => {

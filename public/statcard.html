@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StatCard - Series Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background: #0f0f1a;
+            background-image: 
+                radial-gradient(ellipse at 30% 20%, rgba(212, 168, 75, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(100, 100, 120, 0.08) 0%, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            gap: 40px;
+            overflow-x: hidden;
+        }
+
+        .page-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 30px rgba(212, 168, 75, 0.3);
+        }
+
+        .main-container {
+            display: flex;
+            gap: 50px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        /* Card Section */
+        .card-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+        }
+
+        .card-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        .tier-label {
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            padding: 6px 16px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* FIFA Card */
+        .fifa-card {
+            position: relative;
+            width: 300px;
+            height: 430px;
+            cursor: pointer;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .fifa-card.no-hover {
+            pointer-events: none;
+        }
+
+        .fifa-card:not(.no-hover):hover {
+            transform: scale(1.03) translateY(-8px);
+            filter: brightness(1.08);
+        }
+
+        /* Card Background */
+        .card-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.6));
+        }
+
+        /* Diagonal Pattern */
+        .card-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip-path: url(#cardClip);
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .card-pattern::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                55deg,
+                transparent,
+                transparent 6px,
+                rgba(0, 0, 0, 0.08) 6px,
+                rgba(0, 0, 0, 0.08) 12px
+            );
+        }
+
+        /* Rating & Position */
+        .card-top {
+            position: absolute;
+            top: 22px;
+            left: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            z-index: 10;
+        }
+
+        .card-rating {
+            font-family: 'Oswald', sans-serif;
+            font-size: 64px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .card-position {
+            font-family: 'Oswald', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-top: -2px;
+        }
+
+
+        /* Player Avatar */
+        .player-image-container {
+            position: absolute;
+            top: 28px;
+            right: 28px;
+            width: 140px;
+            height: 140px;
+            z-index: 5;
+        }
+
+        .player-placeholder {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Oswald', sans-serif;
+            font-size: 46px;
+            font-weight: 700;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Player Name */
+        .player-name-bar {
+            position: absolute;
+            top: 185px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 88%;
+            text-align: center;
+            padding: 12px 0 10px;
+            border-top: 2px solid;
+            border-bottom: 1px solid;
+            z-index: 10;
+        }
+
+        .player-name {
+            font-family: 'Oswald', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Stats Grid */
+        .stats-container {
+            position: absolute;
+            top: 250px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 88%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 20px;
+            z-index: 10;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-row.left {
+            justify-content: flex-start;
+        }
+
+        .stat-row.right {
+            justify-content: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .stat-value {
+            font-family: 'Oswald', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            min-width: 36px;
+        }
+
+        .stat-row.left .stat-value {
+            text-align: left;
+        }
+
+        .stat-row.right .stat-value {
+            text-align: right;
+        }
+
+        .stat-label {
+            font-family: 'Oswald', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            opacity: 0.85;
+        }
+
+        /* Rank Footer */
+        .card-footer {
+            position: absolute;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .rank-badge {
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 5px 16px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Shine Effect - contained within card using background-position */
+        .card-shine {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip-path: url(#cardClip);
+            background: linear-gradient(
+                105deg,
+                transparent 0%,
+                transparent 40%,
+                rgba(255, 255, 255, 0.15) 45%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0.15) 55%,
+                transparent 60%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            background-position: 200% 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .fifa-card:not(.no-hover):hover .card-shine {
+            opacity: 1;
+            animation: shine 0.6s ease forwards;
+        }
+
+        @keyframes shine {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ===================
+           RANK UP ANIMATION SYSTEM
+           =================== */
+
+        /* Overlay for rank up */
+        .rankup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.5s ease;
+        }
+
+        .rankup-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+            background: rgba(0, 0, 0, 0.85);
+        }
+
+        .rankup-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* Particle effects container */
+        .particles-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        /* Glow ring effect */
+        .glow-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px;
+            height: 500px;
+            border-radius: 20px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        /* Rank up text */
+        .rankup-text {
+            font-family: 'Oswald', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            opacity: 0;
+            transform: scale(0.5) translateY(50px);
+            text-shadow: 0 0 30px currentColor;
+            z-index: 20;
+        }
+
+        .rankup-tier-name {
+            font-family: 'Oswald', sans-serif;
+            font-size: 72px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 12px;
+            opacity: 0;
+            transform: scale(2);
+            z-index: 20;
+        }
+
+        /* Card animation states */
+        .rankup-card-container {
+            position: relative;
+            z-index: 10;
+        }
+
+        .rankup-card-container .fifa-card {
+            transition: all 0.5s ease;
+        }
+
+        /* Lightning bolts */
+        .lightning {
+            position: absolute;
+            width: 4px;
+            height: 100px;
+            background: linear-gradient(180deg, transparent, currentColor, transparent);
+            opacity: 0;
+            z-index: 6;
+            filter: blur(1px);
+        }
+
+        /* Star burst */
+        .star-burst {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 3;
+        }
+
+        /* Skip button */
+        .skip-btn {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            color: #fff;
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .skip-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .rankup-overlay.active .skip-btn {
+            opacity: 1;
+        }
+
+        /* ===================
+           TIER COLOR SCHEMES
+           =================== */
+
+        /* BRONZE - Matte/Dull */
+        .fifa-card.bronze .card-rating,
+        .fifa-card.bronze .card-position,
+        .fifa-card.bronze .player-name,
+        .fifa-card.bronze .stat-value,
+        .fifa-card.bronze .stat-label {
+            color: #3d2a1a;
+        }
+
+        .fifa-card.bronze .player-placeholder {
+            background: linear-gradient(145deg, #9a7048 0%, #6b4423 100%);
+            color: #3d2a1a;
+            border: 3px solid #5c3d1e;
+        }
+
+        .fifa-card.bronze .player-name-bar {
+            border-color: #6b4423;
+        }
+
+        .fifa-card.bronze .rank-badge {
+            background: rgba(92, 61, 30, 0.4);
+            color: #3d2a1a;
+            border: 1px solid #6b4423;
+        }
+
+        .tier-label.bronze {
+            background: linear-gradient(135deg, #9a7048 0%, #6b4423 100%);
+            color: #2a1a10;
+        }
+
+        /* SILVER - Brushed Metal/Slightly Dull */
+        .fifa-card.silver .card-rating,
+        .fifa-card.silver .card-position,
+        .fifa-card.silver .player-name,
+        .fifa-card.silver .stat-value,
+        .fifa-card.silver .stat-label {
+            color: #3a3a3a;
+        }
+
+        .fifa-card.silver .player-placeholder {
+            background: linear-gradient(145deg, #b8b8b8 0%, #808080 100%);
+            color: #3a3a3a;
+            border: 3px solid #686868;
+        }
+
+        .fifa-card.silver .player-name-bar {
+            border-color: #808080;
+        }
+
+        .fifa-card.silver .rank-badge {
+            background: rgba(100, 100, 100, 0.4);
+            color: #3a3a3a;
+            border: 1px solid #808080;
+        }
+
+        .tier-label.silver {
+            background: linear-gradient(135deg, #b8b8b8 0%, #888888 100%);
+            color: #2a2a2a;
+        }
+
+        /* GOLD - Shiny! */
+        .fifa-card.gold .card-rating,
+        .fifa-card.gold .card-position,
+        .fifa-card.gold .player-name,
+        .fifa-card.gold .stat-value,
+        .fifa-card.gold .stat-label {
+            color: #5a4010;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .fifa-card.gold .player-placeholder {
+            background: linear-gradient(145deg, #ffe066 0%, #cc9900 50%, #ffd700 100%);
+            color: #5a4010;
+            border: 3px solid #b38600;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.3), 0 4px 15px rgba(204, 153, 0, 0.5);
+        }
+
+        .fifa-card.gold .player-name-bar {
+            border-color: #cc9900;
+        }
+
+        .fifa-card.gold .rank-badge {
+            background: rgba(179, 134, 0, 0.3);
+            color: #5a4010;
+            border: 1px solid #cc9900;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .tier-label.gold {
+            background: linear-gradient(135deg, #ffe066 0%, #ffd700 50%, #cc9900 100%);
+            color: #5a4010;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+
+        /* PLATINUM - Shiny white-gold! */
+        .fifa-card.platinum .card-rating,
+        .fifa-card.platinum .card-position,
+        .fifa-card.platinum .player-name,
+        .fifa-card.platinum .stat-value,
+        .fifa-card.platinum .stat-label {
+            color: #1a3028;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .fifa-card.platinum .player-placeholder {
+            background: linear-gradient(145deg, #ffffff 0%, #a8d8c0 50%, #e8f5f0 100%);
+            color: #1a3028;
+            border: 3px solid #60b890;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5), 0 4px 15px rgba(96, 184, 144, 0.4);
+        }
+
+        .fifa-card.platinum .player-name-bar {
+            border-color: #80c8a8;
+        }
+
+        .fifa-card.platinum .rank-badge {
+            background: rgba(96, 184, 144, 0.25);
+            color: #1a3028;
+            border: 1px solid #80c8a8;
+            box-shadow: 0 0 10px rgba(168, 216, 192, 0.4);
+        }
+
+        .tier-label.platinum {
+            background: linear-gradient(135deg, #ffffff 0%, #c8e6d8 50%, #80c8a8 100%);
+            color: #1a3028;
+            box-shadow: 0 0 15px rgba(168, 216, 192, 0.5);
+        }
+
+        .tier-label.platinum {
+            background: linear-gradient(135deg, #a8e6cf 0%, #3d8b6e 100%);
+            color: #1a2a3a;
+        }
+
+        /* DIAMOND - Super Shiny Crystalline! */
+        .fifa-card.diamond .card-rating,
+        .fifa-card.diamond .card-position,
+        .fifa-card.diamond .player-name,
+        .fifa-card.diamond .stat-value,
+        .fifa-card.diamond .stat-label {
+            color: #1a3040;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 10px rgba(160, 216, 255, 0.3);
+        }
+
+        .fifa-card.diamond .player-placeholder {
+            background: linear-gradient(145deg, #ffffff 0%, #a0d8ff 30%, #ffffff 50%, #80c8f0 70%, #e8f6ff 100%);
+            color: #1a3040;
+            border: 3px solid #70c0f0;
+            box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.6), 0 4px 20px rgba(112, 192, 240, 0.5), 0 0 30px rgba(160, 216, 255, 0.3);
+        }
+
+        .fifa-card.diamond .player-name-bar {
+            border-color: #80c8f0;
+        }
+
+        .fifa-card.diamond .rank-badge {
+            background: rgba(112, 192, 240, 0.25);
+            color: #1a3040;
+            border: 1px solid #80c8f0;
+            box-shadow: 0 0 15px rgba(160, 216, 255, 0.5);
+        }
+
+        .tier-label.diamond {
+            background: linear-gradient(135deg, #ffffff 0%, #c0e8ff 30%, #ffffff 50%, #a0d8ff 70%, #70c0f0 100%);
+            color: #1a3040;
+            box-shadow: 0 0 20px rgba(160, 216, 255, 0.6);
+        }
+
+        /* Diamond shimmer animation - contained within card */
+        .fifa-card.diamond::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                105deg,
+                transparent 0%,
+                transparent 40%,
+                rgba(255, 255, 255, 0.5) 45%,
+                rgba(255, 255, 255, 0.8) 50%,
+                rgba(255, 255, 255, 0.5) 55%,
+                transparent 60%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            animation: diamondShimmer 3s ease-in-out infinite;
+            clip-path: url(#cardClip);
+            pointer-events: none;
+        }
+
+        @keyframes diamondShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* LEGEND - Fiery Ember Glow Shiny! */
+        .fifa-card.legend .card-rating,
+        .fifa-card.legend .card-position,
+        .fifa-card.legend .player-name,
+        .fifa-card.legend .stat-value,
+        .fifa-card.legend .stat-label {
+            color: #3a1510;
+            text-shadow: 0 1px 0 rgba(255, 200, 150, 0.4), 0 0 10px rgba(255, 102, 0, 0.2);
+        }
+
+        .fifa-card.legend .player-placeholder {
+            background: linear-gradient(145deg, #ffcc80 0%, #ff6600 30%, #ffaa44 50%, #ee4400 70%, #cc3300 100%);
+            color: #3a1510;
+            border: 3px solid #cc3300;
+            box-shadow: inset 0 0 25px rgba(255, 200, 100, 0.4), 0 4px 20px rgba(255, 102, 0, 0.5), 0 0 30px rgba(255, 85, 0, 0.3);
+        }
+
+        .fifa-card.legend .player-name-bar {
+            border-color: #ee4400;
+        }
+
+        .fifa-card.legend .rank-badge {
+            background: rgba(204, 51, 0, 0.25);
+            color: #3a1510;
+            border: 1px solid #ee4400;
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.4);
+        }
+
+        .tier-label.legend {
+            background: linear-gradient(135deg, #ffcc80 0%, #ff6600 50%, #cc3300 100%);
+            color: #3a1510;
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.5);
+        }
+
+        /* Legend fire animation */
+        .fifa-card.legend::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(0deg, rgba(255, 102, 0, 0.15), transparent);
+            animation: legendFlicker 2s ease-in-out infinite alternate;
+            clip-path: url(#cardClip);
+            pointer-events: none;
+        }
+
+        @keyframes legendFlicker {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+            100% { opacity: 0.4; }
+        }
+
+        /* ICON - Royal Purple Mystical Shiny! */
+        .fifa-card.icon .card-rating,
+        .fifa-card.icon .card-position,
+        .fifa-card.icon .player-name,
+        .fifa-card.icon .stat-value,
+        .fifa-card.icon .stat-label {
+            color: #2a1540;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 15px rgba(160, 112, 224, 0.3);
+        }
+
+        .fifa-card.icon .player-placeholder {
+            background: linear-gradient(145deg, #f0e8ff 0%, #c8a0ff 25%, #d0b0ff 50%, #9060d0 75%, #7840b0 100%);
+            color: #2a1540;
+            border: 3px solid #7840b0;
+            box-shadow: inset 0 0 25px rgba(255, 255, 255, 0.4), 0 4px 20px rgba(120, 64, 176, 0.5), 0 0 35px rgba(160, 112, 224, 0.4);
+        }
+
+        .fifa-card.icon .player-name-bar {
+            border-color: #9060d0;
+        }
+
+        .fifa-card.icon .rank-badge {
+            background: rgba(120, 64, 176, 0.25);
+            color: #2a1540;
+            border: 1px solid #9060d0;
+            box-shadow: 0 0 15px rgba(160, 112, 224, 0.4);
+        }
+
+        .tier-label.icon {
+            background: linear-gradient(135deg, #e0c8ff 0%, #c8a0ff 30%, #9060d0 70%, #7840b0 100%);
+            color: #2a1540;
+            box-shadow: 0 0 25px rgba(160, 112, 224, 0.5);
+        }
+
+        /* Icon mystical shimmer - contained within card */
+        .fifa-card.icon::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                110deg,
+                transparent 0%,
+                transparent 35%,
+                rgba(200, 160, 255, 0.4) 42%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(200, 160, 255, 0.4) 58%,
+                transparent 65%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            animation: iconShimmer 4s ease-in-out infinite;
+            clip-path: url(#cardClip);
+            pointer-events: none;
+        }
+
+        @keyframes iconShimmer {
+            0% { background-position: 200% 0; opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { background-position: -200% 0; opacity: 0.8; }
+        }
+
+        /* Leaderboard */
+        .leaderboard-section {
+            flex: 1;
+            min-width: 320px;
+            max-width: 450px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .leaderboard-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .leaderboard-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .leaderboard-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .leaderboard-list::-webkit-scrollbar-thumb {
+            background: rgba(212, 168, 75, 0.4);
+            border-radius: 3px;
+        }
+
+        .leaderboard-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .leaderboard-row:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+        }
+
+        .leaderboard-row.active {
+            background: rgba(212, 168, 75, 0.15);
+            border-color: rgba(212, 168, 75, 0.5);
+        }
+
+        .leaderboard-row.gold-row {
+            background: linear-gradient(90deg, rgba(212, 168, 75, 0.15) 0%, transparent 100%);
+        }
+
+        .leaderboard-row.silver-row {
+            background: linear-gradient(90deg, rgba(192, 192, 192, 0.15) 0%, transparent 100%);
+        }
+
+        .leaderboard-row.bronze-row {
+            background: linear-gradient(90deg, rgba(205, 154, 104, 0.15) 0%, transparent 100%);
+        }
+
+        .lb-rank {
+            font-family: 'Oswald', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #888;
+            width: 35px;
+        }
+
+        .leaderboard-row.gold-row .lb-rank { color: #d4a84b; }
+        .leaderboard-row.silver-row .lb-rank { color: #c0c0c0; }
+        .leaderboard-row.bronze-row .lb-rank { color: #cd9a68; }
+
+        .lb-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            margin-right: 12px;
+        }
+
+        /* Matte/Dull tiers */
+        .lb-avatar.bronze { background: linear-gradient(135deg, #9a7048 0%, #5c3d1e 100%); color: #3d2a1a; }
+        .lb-avatar.silver { background: linear-gradient(135deg, #b8b8b8 0%, #787878 100%); color: #3a3a3a; }
+        /* Shiny tiers */
+        .lb-avatar.gold { background: linear-gradient(135deg, #ffe066 0%, #cc9900 100%); color: #5a4010; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+        .lb-avatar.platinum { background: linear-gradient(135deg, #e8f5f0 0%, #80c8a8 100%); color: #1a3028; box-shadow: 0 0 10px rgba(168, 216, 192, 0.4); }
+        .lb-avatar.diamond { background: linear-gradient(135deg, #ffffff 0%, #a0d8ff 50%, #70c0f0 100%); color: #1a3040; box-shadow: 0 0 12px rgba(160, 216, 255, 0.5); }
+        .lb-avatar.legend { background: linear-gradient(135deg, #ffcc80 0%, #ff6600 50%, #cc3300 100%); color: #3a1510; box-shadow: 0 0 12px rgba(255, 102, 0, 0.5); }
+        .lb-avatar.icon { background: linear-gradient(135deg, #e0c8ff 0%, #9060d0 50%, #7840b0 100%); color: #2a1540; box-shadow: 0 0 15px rgba(160, 112, 224, 0.5); }
+
+        .lb-info {
+            flex: 1;
+        }
+
+        .lb-name {
+            font-family: 'Oswald', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .lb-tier {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .lb-rating {
+            font-family: 'Oswald', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #d4a84b;
+        }
+
+        /* Demo Controls */
+        .demo-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .demo-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #d4a84b 0%, #8b6914 100%);
+            border: none;
+            border-radius: 6px;
+            color: #2a2010;
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 168, 75, 0.4);
+        }
+
+        .demo-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .leaderboard-section {
+                width: 100%;
+                max-width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- SVG Definitions -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <clipPath id="cardClip">
+                <path d="M 18 0 
+                         L 282 0 
+                         Q 300 0 300 18 
+                         L 300 365 
+                         Q 300 380 290 390 
+                         L 160 428 
+                         Q 150 432 140 428 
+                         L 10 390 
+                         Q 0 380 0 365 
+                         L 0 18 
+                         Q 0 0 18 0 Z"/>
+            </clipPath>
+            
+            <!-- BRONZE - Matte, worn copper look (dull) -->
+            <linearGradient id="bronzeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#a67c52"/>
+                <stop offset="25%" style="stop-color:#8b6239"/>
+                <stop offset="50%" style="stop-color:#9a7048"/>
+                <stop offset="75%" style="stop-color:#7a5530"/>
+                <stop offset="100%" style="stop-color:#5c3d1e"/>
+            </linearGradient>
+            
+            <!-- SILVER - Brushed metal look (slightly dull) -->
+            <linearGradient id="silverGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#c8c8c8"/>
+                <stop offset="25%" style="stop-color:#a8a8a8"/>
+                <stop offset="50%" style="stop-color:#b8b8b8"/>
+                <stop offset="75%" style="stop-color:#989898"/>
+                <stop offset="100%" style="stop-color:#787878"/>
+            </linearGradient>
+            
+            <!-- GOLD - Brilliant, gleaming 24k gold (SHINY!) -->
+            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#fff9e6"/>
+                <stop offset="10%" style="stop-color:#ffe766"/>
+                <stop offset="25%" style="stop-color:#ffd700"/>
+                <stop offset="40%" style="stop-color:#ffcc00"/>
+                <stop offset="50%" style="stop-color:#fff0a0"/>
+                <stop offset="60%" style="stop-color:#ffd700"/>
+                <stop offset="75%" style="stop-color:#e6b800"/>
+                <stop offset="90%" style="stop-color:#cc9900"/>
+                <stop offset="100%" style="stop-color:#b38600"/>
+            </linearGradient>
+            
+            <!-- PLATINUM - Polished white gold/platinum (SHINY!) -->
+            <linearGradient id="platinumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ffffff"/>
+                <stop offset="10%" style="stop-color:#f0f8f4"/>
+                <stop offset="25%" style="stop-color:#e8f5f0"/>
+                <stop offset="40%" style="stop-color:#d0ebe0"/>
+                <stop offset="50%" style="stop-color:#f5fffa"/>
+                <stop offset="60%" style="stop-color:#c8e6d8"/>
+                <stop offset="75%" style="stop-color:#a8d8c0"/>
+                <stop offset="90%" style="stop-color:#80c8a8"/>
+                <stop offset="100%" style="stop-color:#60b890"/>
+            </linearGradient>
+            
+            <!-- DIAMOND - Brilliant crystalline with rainbow refractions (SUPER SHINY!) -->
+            <linearGradient id="diamondGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ffffff"/>
+                <stop offset="8%" style="stop-color:#e8f8ff"/>
+                <stop offset="16%" style="stop-color:#ffffff"/>
+                <stop offset="24%" style="stop-color:#d0f0ff"/>
+                <stop offset="32%" style="stop-color:#e0f4ff"/>
+                <stop offset="40%" style="stop-color:#ffffff"/>
+                <stop offset="48%" style="stop-color:#c0e8ff"/>
+                <stop offset="56%" style="stop-color:#f0faff"/>
+                <stop offset="64%" style="stop-color:#ffffff"/>
+                <stop offset="72%" style="stop-color:#b0e0ff"/>
+                <stop offset="80%" style="stop-color:#e8f6ff"/>
+                <stop offset="88%" style="stop-color:#a0d8ff"/>
+                <stop offset="100%" style="stop-color:#70c0f0"/>
+            </linearGradient>
+            
+            <!-- LEGEND - Fiery orange/red with ember glow (SHINY!) -->
+            <linearGradient id="legendGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#fff0e0"/>
+                <stop offset="12%" style="stop-color:#ffcc80"/>
+                <stop offset="25%" style="stop-color:#ff9933"/>
+                <stop offset="40%" style="stop-color:#ff6600"/>
+                <stop offset="50%" style="stop-color:#ffaa44"/>
+                <stop offset="60%" style="stop-color:#ff5500"/>
+                <stop offset="75%" style="stop-color:#ee4400"/>
+                <stop offset="90%" style="stop-color:#cc3300"/>
+                <stop offset="100%" style="stop-color:#aa2200"/>
+            </linearGradient>
+            
+            <!-- ICON - Royal purple with mystical shimmer (SHINY!) -->
+            <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#f8f0ff"/>
+                <stop offset="12%" style="stop-color:#e0c8ff"/>
+                <stop offset="25%" style="stop-color:#c8a0ff"/>
+                <stop offset="40%" style="stop-color:#a070e0"/>
+                <stop offset="50%" style="stop-color:#d0b0ff"/>
+                <stop offset="60%" style="stop-color:#9060d0"/>
+                <stop offset="75%" style="stop-color:#7840b0"/>
+                <stop offset="90%" style="stop-color:#6030a0"/>
+                <stop offset="100%" style="stop-color:#502090"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <h1 class="page-title">Series StatCards</h1>
+
+    <!-- Demo Controls for Testing Animations -->
+    <div class="demo-controls">
+        <button class="demo-btn" onclick="StatCard.demoRankUp('bronze', 'silver')">Bronze → Silver</button>
+        <button class="demo-btn" onclick="StatCard.demoRankUp('silver', 'gold')">Silver → Gold</button>
+        <button class="demo-btn" onclick="StatCard.demoRankUp('gold', 'platinum')">Gold → Platinum</button>
+        <button class="demo-btn" onclick="StatCard.demoRankUp('platinum', 'diamond')">Platinum → Diamond</button>
+        <button class="demo-btn" onclick="StatCard.demoRankUp('diamond', 'legend')">Diamond → Legend</button>
+        <button class="demo-btn" onclick="StatCard.demoRankUp('legend', 'icon')">Legend → Icon</button>
+    </div>
+
+    <div class="main-container">
+        <div class="card-section">
+            <div id="card-container"></div>
+        </div>
+
+        <div class="leaderboard-section">
+            <h2 class="leaderboard-title">👑 Global Rankings</h2>
+            <div class="leaderboard-list" id="leaderboard-list"></div>
+        </div>
+    </div>
+
+    <!-- Rank Up Overlay -->
+    <div class="rankup-overlay" id="rankup-overlay">
+        <div class="rankup-container">
+            <div class="rankup-text" id="rankup-text">RANK UP!</div>
+            <div class="particles-container" id="particles-container"></div>
+            <div class="glow-ring" id="glow-ring"></div>
+            <div class="star-burst" id="star-burst"></div>
+            <div class="rankup-card-container" id="rankup-card-container"></div>
+            <div class="rankup-tier-name" id="rankup-tier-name"></div>
+        </div>
+        <button class="skip-btn" onclick="StatCard.skipAnimation()">SKIP →</button>
+    </div>
+
+    <script>
+        // ===================
+        // STATCARD MODULE
+        // ===================
+        const StatCard = (function() {
+            // Tier Configuration
+            const TIERS = [
+                // Matte/Dull tiers
+                { id: 'bronze', name: 'BRONZE', min: 0, max: 999, gradient: 'bronzeGradient', color: '#8b6239', glow: 'rgba(139, 98, 57, 0.6)' },
+                { id: 'silver', name: 'SILVER', min: 1000, max: 1399, gradient: 'silverGradient', color: '#a0a0a0', glow: 'rgba(160, 160, 160, 0.6)' },
+                // Shiny tiers
+                { id: 'gold', name: 'GOLD', min: 1400, max: 1799, gradient: 'goldGradient', color: '#ffd700', glow: 'rgba(255, 215, 0, 0.9)' },
+                { id: 'platinum', name: 'PLATINUM', min: 1800, max: 2199, gradient: 'platinumGradient', color: '#80c8a8', glow: 'rgba(128, 200, 168, 0.9)' },
+                { id: 'diamond', name: 'DIAMOND', min: 2200, max: 2599, gradient: 'diamondGradient', color: '#a0d8ff', glow: 'rgba(160, 216, 255, 1)' },
+                { id: 'legend', name: 'LEGEND', min: 2600, max: 2999, gradient: 'legendGradient', color: '#ff6600', glow: 'rgba(255, 102, 0, 1)' },
+                { id: 'icon', name: 'ICON', min: 3000, max: Infinity, gradient: 'iconGradient', color: '#c8a0ff', glow: 'rgba(200, 160, 255, 1)' }
+            ];
+
+            // State
+            let allUsers = [];
+            let selectedUserId = null;
+            let animationInProgress = false;
+            let animationTimers = [];
+
+            // Utility Functions
+            function getTier(rating) {
+                for (const tier of TIERS) {
+                    if (rating >= tier.min && rating <= tier.max) return tier;
+                }
+                return TIERS[0];
+            }
+
+            function getTierById(id) {
+                return TIERS.find(t => t.id === id) || TIERS[0];
+            }
+
+            function getInitials(name) {
+                if (!name) return '??';
+                const parts = name.split(/[\s._-]+/);
+                return parts.length >= 2 
+                    ? (parts[0][0] + parts[1][0]).toUpperCase()
+                    : name.substring(0, 2).toUpperCase();
+            }
+
+            function ratingToOvr(rating) {
+                return Math.min(99, Math.max(40, Math.round(40 + (rating - 500) * (59 / 2500))));
+            }
+
+            function statToDisplay(rating) {
+                return Math.min(99, Math.max(40, Math.round(40 + (rating - 500) * (59 / 2500))));
+            }
+
+            function getBestArchetype(stats) {
+                const labels = {
+                    engineering: 'DEV',
+                    finance: 'FIN',
+                    creative: 'CRE',
+                    business_ops: 'BUS',
+                    product: 'PRD',
+                    research: 'RES'
+                };
+                
+                let best = 'engineering';
+                let bestRating = 0;
+                
+                for (const [arch, stat] of Object.entries(stats)) {
+                    if (stat.rating > bestRating) {
+                        bestRating = stat.rating;
+                        best = arch;
+                    }
+                }
+                
+                return labels[best] || 'DEV';
+            }
+
+            function createCardHTML(data, tier) {
+                return `
+                    <div class="card-wrapper">
+                        <div class="fifa-card ${tier.id}" data-user="${data.userId}">
+                            <svg class="card-bg" viewBox="0 0 300 430">
+                                <path fill="url(#${tier.gradient})" d="M 18 0 
+                                     L 282 0 
+                                     Q 300 0 300 18 
+                                     L 300 365 
+                                     Q 300 380 290 390 
+                                     L 160 428 
+                                     Q 150 432 140 428 
+                                     L 10 390 
+                                     Q 0 380 0 365 
+                                     L 0 18 
+                                     Q 0 0 18 0 Z"/>
+                            </svg>
+                            
+                            <div class="card-pattern"></div>
+                            
+                            <div class="card-top">
+                                <div class="card-rating">${ratingToOvr(data.blendedRating)}</div>
+                                <div class="card-position">${getBestArchetype(data.stats)}</div>
+                            </div>
+                            
+                            <div class="player-image-container">
+                                <div class="player-placeholder">${getInitials(data.userId)}</div>
+                            </div>
+                            
+                            <div class="player-name-bar">
+                                <div class="player-name">${data.userId.toUpperCase()}</div>
+                            </div>
+                            
+                            <div class="stats-container">
+                                <div class="stat-row left">
+                                    <span class="stat-value">${statToDisplay(data.stats.engineering?.rating || 1000)}</span>
+                                    <span class="stat-label">ENG</span>
+                                </div>
+                                <div class="stat-row right">
+                                    <span class="stat-value">${statToDisplay(data.stats.finance?.rating || 1000)}</span>
+                                    <span class="stat-label">FIN</span>
+                                </div>
+                                <div class="stat-row left">
+                                    <span class="stat-value">${statToDisplay(data.stats.creative?.rating || 1000)}</span>
+                                    <span class="stat-label">CRE</span>
+                                </div>
+                                <div class="stat-row right">
+                                    <span class="stat-value">${statToDisplay(data.stats.business_ops?.rating || 1000)}</span>
+                                    <span class="stat-label">BUS</span>
+                                </div>
+                                <div class="stat-row left">
+                                    <span class="stat-value">${statToDisplay(data.stats.product?.rating || 1000)}</span>
+                                    <span class="stat-label">PRD</span>
+                                </div>
+                                <div class="stat-row right">
+                                    <span class="stat-value">${statToDisplay(data.stats.research?.rating || 1000)}</span>
+                                    <span class="stat-label">RES</span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer">
+                                <span class="rank-badge">🏆 RANK #${data.rank}</span>
+                            </div>
+                            
+                            <div class="card-shine"></div>
+                        </div>
+                        <span class="tier-label ${tier.id}">${tier.name}</span>
+                    </div>
+                `;
+            }
+
+            // ===================
+            // RANK UP ANIMATION
+            // ===================
+            function playRankUpAnimation(userData, oldTier, newTier) {
+                if (animationInProgress) return Promise.resolve();
+                animationInProgress = true;
+
+                return new Promise((resolve) => {
+                    const overlay = document.getElementById('rankup-overlay');
+                    const cardContainer = document.getElementById('rankup-card-container');
+                    const particlesContainer = document.getElementById('particles-container');
+                    const glowRing = document.getElementById('glow-ring');
+                    const starBurst = document.getElementById('star-burst');
+                    const rankupText = document.getElementById('rankup-text');
+                    const tierName = document.getElementById('rankup-tier-name');
+
+                    // Clear previous
+                    particlesContainer.innerHTML = '';
+                    animationTimers.forEach(t => clearTimeout(t));
+                    animationTimers = [];
+
+                    // Set initial card (old tier)
+                    const oldTierData = getTierById(oldTier);
+                    const newTierData = getTierById(newTier);
+                    
+                    cardContainer.innerHTML = createCardHTML(userData, oldTierData);
+                    const card = cardContainer.querySelector('.fifa-card');
+                    card.classList.add('no-hover');
+
+                    // Setup colors
+                    rankupText.style.color = newTierData.color;
+                    tierName.style.color = newTierData.color;
+                    tierName.textContent = newTierData.name;
+                    glowRing.style.boxShadow = `0 0 100px 50px ${newTierData.glow}, inset 0 0 100px 50px ${newTierData.glow}`;
+                    starBurst.style.background = `radial-gradient(circle, ${newTierData.glow} 0%, transparent 70%)`;
+
+                    // Show overlay
+                    overlay.classList.add('active');
+
+                    // Animation Timeline
+                    const timeline = [
+                        // Phase 1: Card shakes and glows (0-1000ms)
+                        { time: 100, fn: () => {
+                            card.style.animation = 'cardShake 0.1s ease infinite';
+                            card.style.filter = 'brightness(1.2)';
+                        }},
+                        
+                        // Phase 2: Particles start (500ms)
+                        { time: 500, fn: () => createParticles(particlesContainer, oldTierData.color, 30) },
+                        
+                        // Phase 3: Glow ring appears (800ms)
+                        { time: 800, fn: () => {
+                            glowRing.style.transition = 'opacity 0.5s ease';
+                            glowRing.style.opacity = '0.5';
+                        }},
+                        
+                        // Phase 4: Card flips and transforms (1200ms)
+                        { time: 1200, fn: () => {
+                            card.style.animation = 'none';
+                            card.style.transition = 'transform 0.8s ease, filter 0.3s ease';
+                            card.style.transform = 'rotateY(90deg) scale(0.8)';
+                            card.style.filter = 'brightness(2)';
+                        }},
+                        
+                        // Phase 5: Swap to new tier (1600ms - at 90deg rotation)
+                        { time: 1600, fn: () => {
+                            // Update card to new tier
+                            const newUserData = { ...userData, blendedRating: newTierData.min + 50 };
+                            cardContainer.innerHTML = createCardHTML(newUserData, newTierData);
+                            const newCard = cardContainer.querySelector('.fifa-card');
+                            newCard.classList.add('no-hover');
+                            newCard.style.transform = 'rotateY(-90deg) scale(0.8)';
+                            newCard.style.filter = 'brightness(2)';
+                            newCard.style.transition = 'transform 0.8s ease, filter 0.5s ease';
+                            
+                            // Star burst
+                            starBurst.style.transition = 'all 0.5s ease';
+                            starBurst.style.width = '800px';
+                            starBurst.style.height = '800px';
+                            starBurst.style.opacity = '0.8';
+                        }},
+                        
+                        // Phase 6: Complete flip (1700ms)
+                        { time: 1700, fn: () => {
+                            const newCard = cardContainer.querySelector('.fifa-card');
+                            newCard.style.transform = 'rotateY(0deg) scale(1)';
+                            newCard.style.filter = 'brightness(1.5)';
+                            
+                            // More particles in new color
+                            createParticles(particlesContainer, newTierData.color, 50);
+                        }},
+                        
+                        // Phase 7: Show "RANK UP!" text (2000ms)
+                        { time: 2000, fn: () => {
+                            rankupText.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                            rankupText.style.opacity = '1';
+                            rankupText.style.transform = 'scale(1) translateY(0)';
+                            
+                            const newCard = cardContainer.querySelector('.fifa-card');
+                            newCard.style.filter = 'brightness(1)';
+                        }},
+                        
+                        // Phase 8: Show tier name (2500ms)
+                        { time: 2500, fn: () => {
+                            tierName.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                            tierName.style.opacity = '1';
+                            tierName.style.transform = 'scale(1)';
+                            
+                            // Glow pulse
+                            glowRing.style.animation = 'glowPulse 1s ease infinite';
+                        }},
+                        
+                        // Phase 9: Fade out star burst (3000ms)
+                        { time: 3000, fn: () => {
+                            starBurst.style.opacity = '0';
+                            starBurst.style.width = '1000px';
+                            starBurst.style.height = '1000px';
+                        }},
+                        
+                        // Phase 10: Hold for viewing (4500ms)
+                        { time: 4500, fn: () => {
+                            // Start fade out
+                            rankupText.style.opacity = '0';
+                            tierName.style.opacity = '0';
+                            glowRing.style.opacity = '0';
+                        }},
+                        
+                        // Phase 11: Close overlay (5000ms)
+                        { time: 5000, fn: () => {
+                            finishAnimation(resolve, newTierData);
+                        }}
+                    ];
+
+                    // Execute timeline
+                    timeline.forEach(({ time, fn }) => {
+                        animationTimers.push(setTimeout(fn, time));
+                    });
+                });
+            }
+
+            function createParticles(container, color, count) {
+                for (let i = 0; i < count; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.background = color;
+                    particle.style.left = '50%';
+                    particle.style.top = '50%';
+                    
+                    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+                    const distance = 150 + Math.random() * 200;
+                    const duration = 1 + Math.random() * 1;
+                    const size = 4 + Math.random() * 8;
+                    
+                    particle.style.width = size + 'px';
+                    particle.style.height = size + 'px';
+                    
+                    particle.animate([
+                        { 
+                            opacity: 1, 
+                            transform: 'translate(-50%, -50%) scale(1)',
+                            boxShadow: `0 0 ${size * 2}px ${color}`
+                        },
+                        { 
+                            opacity: 0, 
+                            transform: `translate(calc(-50% + ${Math.cos(angle) * distance}px), calc(-50% + ${Math.sin(angle) * distance}px)) scale(0)`,
+                            boxShadow: `0 0 0px ${color}`
+                        }
+                    ], {
+                        duration: duration * 1000,
+                        easing: 'cubic-bezier(0, 0.5, 0.5, 1)',
+                        fill: 'forwards'
+                    });
+                    
+                    container.appendChild(particle);
+                    
+                    setTimeout(() => particle.remove(), duration * 1000);
+                }
+            }
+
+            function finishAnimation(resolve, newTierData) {
+                const overlay = document.getElementById('rankup-overlay');
+                overlay.classList.remove('active');
+                
+                // Reset elements
+                setTimeout(() => {
+                    document.getElementById('rankup-text').style.cssText = '';
+                    document.getElementById('rankup-tier-name').style.cssText = '';
+                    document.getElementById('glow-ring').style.cssText = '';
+                    document.getElementById('star-burst').style.cssText = '';
+                    document.getElementById('rankup-card-container').innerHTML = '';
+                    document.getElementById('particles-container').innerHTML = '';
+                    
+                    animationInProgress = false;
+                    resolve(newTierData);
+                }, 500);
+            }
+
+            function skipAnimation() {
+                animationTimers.forEach(t => clearTimeout(t));
+                animationTimers = [];
+                
+                const overlay = document.getElementById('rankup-overlay');
+                overlay.classList.remove('active');
+                
+                setTimeout(() => {
+                    document.getElementById('rankup-text').style.cssText = '';
+                    document.getElementById('rankup-tier-name').style.cssText = '';
+                    document.getElementById('glow-ring').style.cssText = '';
+                    document.getElementById('star-burst').style.cssText = '';
+                    document.getElementById('rankup-card-container').innerHTML = '';
+                    document.getElementById('particles-container').innerHTML = '';
+                    
+                    animationInProgress = false;
+                }, 300);
+            }
+
+            // Add CSS animation for card shake
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes cardShake {
+                    0%, 100% { transform: translateX(0) rotate(0); }
+                    25% { transform: translateX(-5px) rotate(-1deg); }
+                    75% { transform: translateX(5px) rotate(1deg); }
+                }
+                @keyframes glowPulse {
+                    0%, 100% { opacity: 0.5; }
+                    50% { opacity: 0.8; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // ===================
+            // PUBLIC API
+            // ===================
+            function displayCard(userId) {
+                const user = allUsers.find(u => u.userId === userId);
+                if (!user) return;
+
+                selectedUserId = userId;
+                const tier = getTier(user.blendedRating);
+                const container = document.getElementById('card-container');
+                container.innerHTML = createCardHTML(user, tier);
+
+                document.querySelectorAll('.leaderboard-row').forEach(row => {
+                    row.classList.remove('active');
+                    if (row.dataset.userId === userId) {
+                        row.classList.add('active');
+                    }
+                });
+            }
+
+            function renderLeaderboard(entries) {
+                const list = document.getElementById('leaderboard-list');
+                list.innerHTML = '';
+
+                entries.forEach((entry, index) => {
+                    const tier = getTier(entry.blendedRating);
+                    const row = document.createElement('div');
+                    row.className = 'leaderboard-row';
+                    row.dataset.userId = entry.userId;
+                    
+                    if (index === 0) row.classList.add('gold-row');
+                    if (index === 1) row.classList.add('silver-row');
+                    if (index === 2) row.classList.add('bronze-row');
+                    if (entry.userId === selectedUserId) row.classList.add('active');
+
+                    row.innerHTML = `
+                        <span class="lb-rank">${index + 1}</span>
+                        <div class="lb-avatar ${tier.id}">${getInitials(entry.userId)}</div>
+                        <div class="lb-info">
+                            <div class="lb-name">${entry.userId}</div>
+                            <div class="lb-tier">${tier.name}</div>
+                        </div>
+                        <span class="lb-rating">${ratingToOvr(entry.blendedRating)}</span>
+                    `;
+
+                    row.addEventListener('click', () => displayCard(entry.userId));
+                    list.appendChild(row);
+                });
+            }
+
+            // Demo rank up function
+            function demoRankUp(fromTier, toTier) {
+                if (animationInProgress) return;
+                
+                const demoUser = {
+                    userId: 'demo_player',
+                    blendedRating: getTierById(fromTier).min + 50,
+                    rank: 42,
+                    stats: {
+                        engineering: { rating: 1500 },
+                        finance: { rating: 1400 },
+                        creative: { rating: 1600 },
+                        business_ops: { rating: 1450 },
+                        product: { rating: 1550 },
+                        research: { rating: 1350 }
+                    }
+                };
+
+                playRankUpAnimation(demoUser, fromTier, toTier).then((newTier) => {
+                    // Update the main card display after animation
+                    const updatedUser = { ...demoUser, blendedRating: newTier.min + 50 };
+                    const container = document.getElementById('card-container');
+                    container.innerHTML = createCardHTML(updatedUser, newTier);
+                });
+            }
+
+            /**
+             * PUBLIC API: Call this when a user's rating crosses a tier threshold
+             * @param {Object} userData - User data object
+             * @param {number} oldRating - Previous rating
+             * @param {number} newRating - New rating after update
+             * @returns {Promise} - Resolves when animation completes
+             */
+            function onRatingUpdate(userData, oldRating, newRating) {
+                const oldTier = getTier(oldRating);
+                const newTier = getTier(newRating);
+
+                // Check if tier changed (rank up)
+                if (newTier.id !== oldTier.id && TIERS.indexOf(newTier) > TIERS.indexOf(oldTier)) {
+                    return playRankUpAnimation(userData, oldTier.id, newTier.id);
+                }
+
+                return Promise.resolve();
+            }
+
+            // Initialize
+            function init() {
+                allUsers = [
+                    { userId: 'icon_ace', blendedRating: 3100, rank: 1, stats: { engineering: { rating: 3200 }, finance: { rating: 2980 }, creative: { rating: 3150 }, business_ops: { rating: 3020 }, product: { rating: 3180 }, research: { rating: 2850 } }},
+                    { userId: 'legend_lucy', blendedRating: 2800, rank: 2, stats: { engineering: { rating: 2950 }, finance: { rating: 2680 }, creative: { rating: 2850 }, business_ops: { rating: 2720 }, product: { rating: 2880 }, research: { rating: 2550 } }},
+                    { userId: 'diamond_dan', blendedRating: 2400, rank: 3, stats: { engineering: { rating: 2550 }, finance: { rating: 2280 }, creative: { rating: 2450 }, business_ops: { rating: 2320 }, product: { rating: 2480 }, research: { rating: 2150 } }},
+                    { userId: 'plat_player', blendedRating: 2000, rank: 4, stats: { engineering: { rating: 2150 }, finance: { rating: 1880 }, creative: { rating: 2050 }, business_ops: { rating: 1920 }, product: { rating: 2080 }, research: { rating: 1750 } }},
+                    { userId: 'gold_master', blendedRating: 1600, rank: 5, stats: { engineering: { rating: 1750 }, finance: { rating: 1450 }, creative: { rating: 1680 }, business_ops: { rating: 1520 }, product: { rating: 1650 }, research: { rating: 1380 } }},
+                    { userId: 'silver_sam', blendedRating: 1200, rank: 6, stats: { engineering: { rating: 1300 }, finance: { rating: 1100 }, creative: { rating: 1150 }, business_ops: { rating: 1180 }, product: { rating: 1250 }, research: { rating: 1050 } }},
+                    { userId: 'rookie_dev', blendedRating: 750, rank: 7, stats: { engineering: { rating: 800 }, finance: { rating: 650 }, creative: { rating: 700 }, business_ops: { rating: 680 }, product: { rating: 720 }, research: { rating: 600 } }},
+                ];
+
+                renderLeaderboard(allUsers);
+                displayCard(allUsers[4].userId); // Start with gold_master
+            }
+
+            // Return public API
+            return {
+                init,
+                displayCard,
+                renderLeaderboard,
+                demoRankUp,
+                onRatingUpdate,
+                skipAnimation,
+                playRankUpAnimation,
+                getTier,
+                TIERS
+            };
+        })();
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', StatCard.init);
+    </script>
+</body>
+</html>

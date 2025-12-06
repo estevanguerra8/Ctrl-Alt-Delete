@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StatCard Embed - FIFA Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Oswald', sans-serif;
+            background: #0f0f1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .demo-container {
+            display: flex;
+            gap: 60px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .size-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 1px;
+        }
+
+        /* =====================
+           MINI FIFA CARD (Profile Size - 40% scale)
+           Base: 300x430 → Mini: 120x172
+           ===================== */
+        .mini-fifa-card {
+            position: relative;
+            width: 120px;
+            height: 172px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .mini-fifa-card:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .mini-fifa-card svg.card-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 6px 15px rgba(0, 0, 0, 0.5));
+        }
+
+        .mini-fifa-card .card-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip-path: url(#miniCardClip);
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .mini-fifa-card .card-pattern::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                55deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.06) 2px,
+                rgba(0, 0, 0, 0.06) 4px
+            );
+        }
+
+        /* Mini Card Top - Rating & Position (40% of original) */
+        .mini-card-top {
+            position: absolute;
+            top: 9px;  /* 22px * 0.4 */
+            left: 10px; /* 24px * 0.4 */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            z-index: 10;
+        }
+
+        .mini-rating {
+            font-size: 26px; /* 64px * 0.4 */
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .mini-position {
+            font-size: 10px; /* 24px * 0.4 */
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-top: -1px;
+        }
+
+        /* Mini Avatar (40% of 140px = 56px) */
+        .mini-avatar-container {
+            position: absolute;
+            top: 11px; /* 28px * 0.4 */
+            right: 11px;
+            width: 56px;
+            height: 56px;
+            z-index: 5;
+        }
+
+        .mini-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px; /* 46px * 0.4 */
+            font-weight: 700;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Mini Name Bar (40% scale) */
+        .mini-name-bar {
+            position: absolute;
+            top: 74px; /* 185px * 0.4 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 88%;
+            text-align: center;
+            padding: 5px 0 4px;
+            border-top: 1px solid;
+            border-bottom: 1px solid;
+            z-index: 10;
+        }
+
+        .mini-name {
+            font-size: 11px; /* 28px * 0.4 */
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Mini Stats Grid (40% scale) */
+        .mini-stats-container {
+            position: absolute;
+            top: 100px; /* 250px * 0.4 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 88%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px 8px;
+            z-index: 10;
+        }
+
+        .mini-stat-row {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .mini-stat-row.left { justify-content: flex-start; }
+        .mini-stat-row.right { justify-content: flex-end; flex-direction: row-reverse; }
+
+        .mini-stat-value {
+            font-size: 10px; /* 24px * 0.4 */
+            font-weight: 700;
+            min-width: 14px;
+        }
+
+        .mini-stat-row.left .mini-stat-value { text-align: left; }
+        .mini-stat-row.right .mini-stat-value { text-align: right; }
+
+        .mini-stat-label {
+            font-size: 6px; /* 15px * 0.4 */
+            font-weight: 500;
+            opacity: 0.85;
+        }
+
+        /* Mini Rank Footer */
+        .mini-card-footer {
+            position: absolute;
+            bottom: 12px; /* 28px * 0.4 + slight adjustment */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .mini-rank-badge {
+            font-size: 6px; /* 14px * 0.4 */
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        /* Mini Shine Effect */
+        .mini-card-shine {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip-path: url(#miniCardClip);
+            background: linear-gradient(
+                105deg,
+                transparent 0%,
+                transparent 40%,
+                rgba(255, 255, 255, 0.15) 45%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0.15) 55%,
+                transparent 60%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            background-position: 200% 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mini-fifa-card:hover .mini-card-shine {
+            opacity: 1;
+            animation: shine 0.6s ease forwards;
+        }
+
+        /* =====================
+           MEDIUM FIFA CARD (Sidebar Size - 60% scale)
+           Base: 300x430 → Medium: 180x258
+           ===================== */
+        .medium-fifa-card {
+            position: relative;
+            width: 180px;
+            height: 258px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .medium-fifa-card:hover {
+            transform: scale(1.03) translateY(-5px);
+        }
+
+        .medium-fifa-card svg.card-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 9px 21px rgba(0, 0, 0, 0.5));
+        }
+
+        .medium-fifa-card .card-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip-path: url(#mediumCardClip);
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .medium-fifa-card .card-pattern::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                55deg,
+                transparent,
+                transparent 4px,
+                rgba(0, 0, 0, 0.06) 4px,
+                rgba(0, 0, 0, 0.06) 7px
+            );
+        }
+
+        /* Medium Card Top - Rating & Position (60% of original) */
+        .medium-card-top {
+            position: absolute;
+            top: 13px; /* 22px * 0.6 */
+            left: 14px; /* 24px * 0.6 */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            z-index: 10;
+        }
+
+        .medium-rating {
+            font-size: 38px; /* 64px * 0.6 */
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .medium-position {
+            font-size: 14px; /* 24px * 0.6 */
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-top: -1px;
+        }
+
+        /* Medium Avatar (60% of 140px = 84px) */
+        .medium-avatar-container {
+            position: absolute;
+            top: 17px; /* 28px * 0.6 */
+            right: 17px;
+            width: 84px;
+            height: 84px;
+            z-index: 5;
+        }
+
+        .medium-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px; /* 46px * 0.6 */
+            font-weight: 700;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.3), 0 2px 9px rgba(0,0,0,0.3);
+        }
+
+        /* Medium Name Bar (60% scale) */
+        .medium-name-bar {
+            position: absolute;
+            top: 111px; /* 185px * 0.6 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 88%;
+            text-align: center;
+            padding: 7px 0 6px;
+            border-top: 1.2px solid;
+            border-bottom: 1px solid;
+            z-index: 10;
+        }
+
+        .medium-name {
+            font-size: 17px; /* 28px * 0.6 */
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        /* Medium Stats Grid (60% scale) */
+        .medium-stats-container {
+            position: absolute;
+            top: 150px; /* 250px * 0.6 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 88%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px 12px;
+            z-index: 10;
+        }
+
+        .medium-stat-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .medium-stat-row.left { justify-content: flex-start; }
+        .medium-stat-row.right { justify-content: flex-end; flex-direction: row-reverse; }
+
+        .medium-stat-value {
+            font-size: 14px; /* 24px * 0.6 */
+            font-weight: 700;
+            min-width: 22px;
+        }
+
+        .medium-stat-row.left .medium-stat-value { text-align: left; }
+        .medium-stat-row.right .medium-stat-value { text-align: right; }
+
+        .medium-stat-label {
+            font-size: 9px; /* 15px * 0.6 */
+            font-weight: 500;
+            opacity: 0.85;
+        }
+
+        /* Medium Rank Footer */
+        .medium-card-footer {
+            position: absolute;
+            bottom: 17px; /* 28px * 0.6 + slight adjustment */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .medium-rank-badge {
+            font-size: 8px; /* 14px * 0.6 */
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Medium Shine Effect */
+        .medium-card-shine {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip-path: url(#mediumCardClip);
+            background: linear-gradient(
+                105deg,
+                transparent 0%,
+                transparent 40%,
+                rgba(255, 255, 255, 0.15) 45%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0.15) 55%,
+                transparent 60%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            background-position: 200% 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .medium-fifa-card:hover .medium-card-shine {
+            opacity: 1;
+            animation: shine 0.6s ease forwards;
+        }
+
+        @keyframes shine {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* =====================
+           TIER COLOR SCHEMES
+           ===================== */
+
+        /* BRONZE - Matte/Dull */
+        .mini-fifa-card.bronze .mini-rating,
+        .mini-fifa-card.bronze .mini-position,
+        .mini-fifa-card.bronze .mini-name,
+        .mini-fifa-card.bronze .mini-stat-value,
+        .mini-fifa-card.bronze .mini-stat-label { color: #3d2a1a; }
+        .mini-fifa-card.bronze .mini-avatar {
+            background: linear-gradient(145deg, #9a7048 0%, #6b4423 100%);
+            color: #3d2a1a;
+            border: 2px solid #5c3d1e;
+        }
+        .mini-fifa-card.bronze .mini-name-bar { border-color: #6b4423; }
+        .mini-fifa-card.bronze .mini-rank-badge {
+            background: rgba(92, 61, 30, 0.4);
+            color: #3d2a1a;
+            border: 1px solid #6b4423;
+        }
+
+        .medium-fifa-card.bronze .medium-rating,
+        .medium-fifa-card.bronze .medium-position,
+        .medium-fifa-card.bronze .medium-name,
+        .medium-fifa-card.bronze .medium-stat-value,
+        .medium-fifa-card.bronze .medium-stat-label { color: #3d2a1a; }
+        .medium-fifa-card.bronze .medium-avatar {
+            background: linear-gradient(145deg, #9a7048 0%, #6b4423 100%);
+            color: #3d2a1a;
+            border: 2px solid #5c3d1e;
+        }
+        .medium-fifa-card.bronze .medium-name-bar { border-color: #6b4423; }
+        .medium-fifa-card.bronze .medium-rank-badge {
+            background: rgba(92, 61, 30, 0.4);
+            color: #3d2a1a;
+            border: 1px solid #6b4423;
+        }
+
+        /* SILVER - Brushed Metal/Slightly Dull */
+        .mini-fifa-card.silver .mini-rating,
+        .mini-fifa-card.silver .mini-position,
+        .mini-fifa-card.silver .mini-name,
+        .mini-fifa-card.silver .mini-stat-value,
+        .mini-fifa-card.silver .mini-stat-label { color: #3a3a3a; }
+        .mini-fifa-card.silver .mini-avatar {
+            background: linear-gradient(145deg, #b8b8b8 0%, #808080 100%);
+            color: #3a3a3a;
+            border: 2px solid #686868;
+        }
+        .mini-fifa-card.silver .mini-name-bar { border-color: #808080; }
+        .mini-fifa-card.silver .mini-rank-badge {
+            background: rgba(100, 100, 100, 0.4);
+            color: #3a3a3a;
+            border: 1px solid #808080;
+        }
+
+        .medium-fifa-card.silver .medium-rating,
+        .medium-fifa-card.silver .medium-position,
+        .medium-fifa-card.silver .medium-name,
+        .medium-fifa-card.silver .medium-stat-value,
+        .medium-fifa-card.silver .medium-stat-label { color: #3a3a3a; }
+        .medium-fifa-card.silver .medium-avatar {
+            background: linear-gradient(145deg, #b8b8b8 0%, #808080 100%);
+            color: #3a3a3a;
+            border: 2px solid #686868;
+        }
+        .medium-fifa-card.silver .medium-name-bar { border-color: #808080; }
+        .medium-fifa-card.silver .medium-rank-badge {
+            background: rgba(100, 100, 100, 0.4);
+            color: #3a3a3a;
+            border: 1px solid #808080;
+        }
+
+        /* GOLD - Shiny! */
+        .mini-fifa-card.gold .mini-rating,
+        .mini-fifa-card.gold .mini-position,
+        .mini-fifa-card.gold .mini-name,
+        .mini-fifa-card.gold .mini-stat-value,
+        .mini-fifa-card.gold .mini-stat-label { 
+            color: #5a4010; 
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        .mini-fifa-card.gold .mini-avatar {
+            background: linear-gradient(145deg, #ffe066 0%, #cc9900 50%, #ffd700 100%);
+            color: #5a4010;
+            border: 2px solid #b38600;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3), 0 2px 8px rgba(204, 153, 0, 0.5);
+        }
+        .mini-fifa-card.gold .mini-name-bar { border-color: #cc9900; }
+        .mini-fifa-card.gold .mini-rank-badge {
+            background: rgba(179, 134, 0, 0.3);
+            color: #5a4010;
+            border: 1px solid #cc9900;
+            box-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
+        }
+
+        .medium-fifa-card.gold .medium-rating,
+        .medium-fifa-card.gold .medium-position,
+        .medium-fifa-card.gold .medium-name,
+        .medium-fifa-card.gold .medium-stat-value,
+        .medium-fifa-card.gold .medium-stat-label { 
+            color: #5a4010;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        .medium-fifa-card.gold .medium-avatar {
+            background: linear-gradient(145deg, #ffe066 0%, #cc9900 50%, #ffd700 100%);
+            color: #5a4010;
+            border: 2px solid #b38600;
+            box-shadow: inset 0 0 14px rgba(255, 255, 255, 0.3), 0 3px 10px rgba(204, 153, 0, 0.5);
+        }
+        .medium-fifa-card.gold .medium-name-bar { border-color: #cc9900; }
+        .medium-fifa-card.gold .medium-rank-badge {
+            background: rgba(179, 134, 0, 0.3);
+            color: #5a4010;
+            border: 1px solid #cc9900;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+        }
+
+        /* PLATINUM - Shiny white-gold! */
+        .mini-fifa-card.platinum .mini-rating,
+        .mini-fifa-card.platinum .mini-position,
+        .mini-fifa-card.platinum .mini-name,
+        .mini-fifa-card.platinum .mini-stat-value,
+        .mini-fifa-card.platinum .mini-stat-label { 
+            color: #1a3028;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+        .mini-fifa-card.platinum .mini-avatar {
+            background: linear-gradient(145deg, #ffffff 0%, #a8d8c0 50%, #e8f5f0 100%);
+            color: #1a3028;
+            border: 2px solid #60b890;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(96, 184, 144, 0.4);
+        }
+        .mini-fifa-card.platinum .mini-name-bar { border-color: #80c8a8; }
+        .mini-fifa-card.platinum .mini-rank-badge {
+            background: rgba(96, 184, 144, 0.25);
+            color: #1a3028;
+            border: 1px solid #80c8a8;
+            box-shadow: 0 0 6px rgba(168, 216, 192, 0.4);
+        }
+
+        .medium-fifa-card.platinum .medium-rating,
+        .medium-fifa-card.platinum .medium-position,
+        .medium-fifa-card.platinum .medium-name,
+        .medium-fifa-card.platinum .medium-stat-value,
+        .medium-fifa-card.platinum .medium-stat-label { 
+            color: #1a3028;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+        .medium-fifa-card.platinum .medium-avatar {
+            background: linear-gradient(145deg, #ffffff 0%, #a8d8c0 50%, #e8f5f0 100%);
+            color: #1a3028;
+            border: 2px solid #60b890;
+            box-shadow: inset 0 0 14px rgba(255, 255, 255, 0.5), 0 3px 10px rgba(96, 184, 144, 0.4);
+        }
+        .medium-fifa-card.platinum .medium-name-bar { border-color: #80c8a8; }
+        .medium-fifa-card.platinum .medium-rank-badge {
+            background: rgba(96, 184, 144, 0.25);
+            color: #1a3028;
+            border: 1px solid #80c8a8;
+            box-shadow: 0 0 8px rgba(168, 216, 192, 0.4);
+        }
+
+        /* DIAMOND - Super Shiny Crystalline! */
+        .mini-fifa-card.diamond .mini-rating,
+        .mini-fifa-card.diamond .mini-position,
+        .mini-fifa-card.diamond .mini-name,
+        .mini-fifa-card.diamond .mini-stat-value,
+        .mini-fifa-card.diamond .mini-stat-label { 
+            color: #1a3040;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 6px rgba(160, 216, 255, 0.3);
+        }
+        .mini-fifa-card.diamond .mini-avatar {
+            background: linear-gradient(145deg, #ffffff 0%, #a0d8ff 30%, #ffffff 50%, #80c8f0 70%, #e8f6ff 100%);
+            color: #1a3040;
+            border: 2px solid #70c0f0;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.6), 0 2px 12px rgba(112, 192, 240, 0.5), 0 0 15px rgba(160, 216, 255, 0.3);
+        }
+        .mini-fifa-card.diamond .mini-name-bar { border-color: #80c8f0; }
+        .mini-fifa-card.diamond .mini-rank-badge {
+            background: rgba(112, 192, 240, 0.25);
+            color: #1a3040;
+            border: 1px solid #80c8f0;
+            box-shadow: 0 0 8px rgba(160, 216, 255, 0.5);
+        }
+
+        .medium-fifa-card.diamond .medium-rating,
+        .medium-fifa-card.diamond .medium-position,
+        .medium-fifa-card.diamond .medium-name,
+        .medium-fifa-card.diamond .medium-stat-value,
+        .medium-fifa-card.diamond .medium-stat-label { 
+            color: #1a3040;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 8px rgba(160, 216, 255, 0.3);
+        }
+        .medium-fifa-card.diamond .medium-avatar {
+            background: linear-gradient(145deg, #ffffff 0%, #a0d8ff 30%, #ffffff 50%, #80c8f0 70%, #e8f6ff 100%);
+            color: #1a3040;
+            border: 2px solid #70c0f0;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.6), 0 3px 14px rgba(112, 192, 240, 0.5), 0 0 20px rgba(160, 216, 255, 0.3);
+        }
+        .medium-fifa-card.diamond .medium-name-bar { border-color: #80c8f0; }
+        .medium-fifa-card.diamond .medium-rank-badge {
+            background: rgba(112, 192, 240, 0.25);
+            color: #1a3040;
+            border: 1px solid #80c8f0;
+            box-shadow: 0 0 10px rgba(160, 216, 255, 0.5);
+        }
+
+        /* Diamond shimmer animation */
+        .mini-fifa-card.diamond::after,
+        .medium-fifa-card.diamond::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                105deg,
+                transparent 0%,
+                transparent 40%,
+                rgba(255, 255, 255, 0.5) 45%,
+                rgba(255, 255, 255, 0.8) 50%,
+                rgba(255, 255, 255, 0.5) 55%,
+                transparent 60%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            animation: diamondShimmer 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .mini-fifa-card.diamond::after { clip-path: url(#miniCardClip); }
+        .medium-fifa-card.diamond::after { clip-path: url(#mediumCardClip); }
+
+        @keyframes diamondShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* LEGEND - Fiery Ember Glow Shiny! */
+        .mini-fifa-card.legend .mini-rating,
+        .mini-fifa-card.legend .mini-position,
+        .mini-fifa-card.legend .mini-name,
+        .mini-fifa-card.legend .mini-stat-value,
+        .mini-fifa-card.legend .mini-stat-label { 
+            color: #3a1510;
+            text-shadow: 0 1px 0 rgba(255, 200, 150, 0.4), 0 0 6px rgba(255, 102, 0, 0.2);
+        }
+        .mini-fifa-card.legend .mini-avatar {
+            background: linear-gradient(145deg, #ffcc80 0%, #ff6600 30%, #ffaa44 50%, #ee4400 70%, #cc3300 100%);
+            color: #3a1510;
+            border: 2px solid #cc3300;
+            box-shadow: inset 0 0 12px rgba(255, 200, 100, 0.4), 0 2px 12px rgba(255, 102, 0, 0.5), 0 0 15px rgba(255, 85, 0, 0.3);
+        }
+        .mini-fifa-card.legend .mini-name-bar { border-color: #ee4400; }
+        .mini-fifa-card.legend .mini-rank-badge {
+            background: rgba(204, 51, 0, 0.25);
+            color: #3a1510;
+            border: 1px solid #ee4400;
+            box-shadow: 0 0 8px rgba(255, 102, 0, 0.4);
+        }
+
+        .medium-fifa-card.legend .medium-rating,
+        .medium-fifa-card.legend .medium-position,
+        .medium-fifa-card.legend .medium-name,
+        .medium-fifa-card.legend .medium-stat-value,
+        .medium-fifa-card.legend .medium-stat-label { 
+            color: #3a1510;
+            text-shadow: 0 1px 0 rgba(255, 200, 150, 0.4), 0 0 8px rgba(255, 102, 0, 0.2);
+        }
+        .medium-fifa-card.legend .medium-avatar {
+            background: linear-gradient(145deg, #ffcc80 0%, #ff6600 30%, #ffaa44 50%, #ee4400 70%, #cc3300 100%);
+            color: #3a1510;
+            border: 2px solid #cc3300;
+            box-shadow: inset 0 0 16px rgba(255, 200, 100, 0.4), 0 3px 14px rgba(255, 102, 0, 0.5), 0 0 20px rgba(255, 85, 0, 0.3);
+        }
+        .medium-fifa-card.legend .medium-name-bar { border-color: #ee4400; }
+        .medium-fifa-card.legend .medium-rank-badge {
+            background: rgba(204, 51, 0, 0.25);
+            color: #3a1510;
+            border: 1px solid #ee4400;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.4);
+        }
+
+        /* Legend fire animation */
+        .mini-fifa-card.legend::after,
+        .medium-fifa-card.legend::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(0deg, rgba(255, 102, 0, 0.15), transparent);
+            animation: legendFlicker 2s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+        .mini-fifa-card.legend::after { clip-path: url(#miniCardClip); }
+        .medium-fifa-card.legend::after { clip-path: url(#mediumCardClip); }
+
+        @keyframes legendFlicker {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+            100% { opacity: 0.4; }
+        }
+
+        /* ICON - Royal Purple Mystical Shiny! */
+        .mini-fifa-card.icon .mini-rating,
+        .mini-fifa-card.icon .mini-position,
+        .mini-fifa-card.icon .mini-name,
+        .mini-fifa-card.icon .mini-stat-value,
+        .mini-fifa-card.icon .mini-stat-label { 
+            color: #2a1540;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 8px rgba(160, 112, 224, 0.3);
+        }
+        .mini-fifa-card.icon .mini-avatar {
+            background: linear-gradient(145deg, #f0e8ff 0%, #c8a0ff 25%, #d0b0ff 50%, #9060d0 75%, #7840b0 100%);
+            color: #2a1540;
+            border: 2px solid #7840b0;
+            box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.4), 0 2px 12px rgba(120, 64, 176, 0.5), 0 0 18px rgba(160, 112, 224, 0.4);
+        }
+        .mini-fifa-card.icon .mini-name-bar { border-color: #9060d0; }
+        .mini-fifa-card.icon .mini-rank-badge {
+            background: rgba(120, 64, 176, 0.25);
+            color: #2a1540;
+            border: 1px solid #9060d0;
+            box-shadow: 0 0 8px rgba(160, 112, 224, 0.4);
+        }
+
+        .medium-fifa-card.icon .medium-rating,
+        .medium-fifa-card.icon .medium-position,
+        .medium-fifa-card.icon .medium-name,
+        .medium-fifa-card.icon .medium-stat-value,
+        .medium-fifa-card.icon .medium-stat-label { 
+            color: #2a1540;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 10px rgba(160, 112, 224, 0.3);
+        }
+        .medium-fifa-card.icon .medium-avatar {
+            background: linear-gradient(145deg, #f0e8ff 0%, #c8a0ff 25%, #d0b0ff 50%, #9060d0 75%, #7840b0 100%);
+            color: #2a1540;
+            border: 2px solid #7840b0;
+            box-shadow: inset 0 0 16px rgba(255, 255, 255, 0.4), 0 3px 14px rgba(120, 64, 176, 0.5), 0 0 22px rgba(160, 112, 224, 0.4);
+        }
+        .medium-fifa-card.icon .medium-name-bar { border-color: #9060d0; }
+        .medium-fifa-card.icon .medium-rank-badge {
+            background: rgba(120, 64, 176, 0.25);
+            color: #2a1540;
+            border: 1px solid #9060d0;
+            box-shadow: 0 0 10px rgba(160, 112, 224, 0.4);
+        }
+
+        /* Icon mystical shimmer */
+        .mini-fifa-card.icon::after,
+        .medium-fifa-card.icon::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                110deg,
+                transparent 0%,
+                transparent 35%,
+                rgba(200, 160, 255, 0.4) 42%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(200, 160, 255, 0.4) 58%,
+                transparent 65%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            animation: iconShimmer 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .mini-fifa-card.icon::after { clip-path: url(#miniCardClip); }
+        .medium-fifa-card.icon::after { clip-path: url(#mediumCardClip); }
+
+        @keyframes iconShimmer {
+            0% { background-position: 200% 0; opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { background-position: -200% 0; opacity: 0.8; }
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 3px;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <!-- SVG Definitions -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <!-- Mini Card Clip Path (40% scale of 300x430) -->
+            <clipPath id="miniCardClip">
+                <path d="M 7.2 0 
+                         L 112.8 0 
+                         Q 120 0 120 7.2 
+                         L 120 146 
+                         Q 120 152 116 156.4 
+                         L 64 171.2 
+                         Q 60 172.8 56 171.2 
+                         L 4 156.4 
+                         Q 0 152 0 146 
+                         L 0 7.2 
+                         Q 0 0 7.2 0 Z"/>
+            </clipPath>
+            
+            <!-- Medium Card Clip Path (60% scale of 300x430) -->
+            <clipPath id="mediumCardClip">
+                <path d="M 10.8 0 
+                         L 169.2 0 
+                         Q 180 0 180 10.8 
+                         L 180 219 
+                         Q 180 228 174 234 
+                         L 96 256.8 
+                         Q 90 259.2 84 256.8 
+                         L 6 234 
+                         Q 0 228 0 219 
+                         L 0 10.8 
+                         Q 0 0 10.8 0 Z"/>
+            </clipPath>
+            
+            <!-- Gradients (same as main card) -->
+            <!-- BRONZE - Matte, worn copper look (dull) -->
+            <linearGradient id="bronzeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#a67c52"/>
+                <stop offset="25%" style="stop-color:#8b6239"/>
+                <stop offset="50%" style="stop-color:#9a7048"/>
+                <stop offset="75%" style="stop-color:#7a5530"/>
+                <stop offset="100%" style="stop-color:#5c3d1e"/>
+            </linearGradient>
+            
+            <!-- SILVER - Brushed metal look (slightly dull) -->
+            <linearGradient id="silverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#c8c8c8"/>
+                <stop offset="25%" style="stop-color:#a8a8a8"/>
+                <stop offset="50%" style="stop-color:#b8b8b8"/>
+                <stop offset="75%" style="stop-color:#989898"/>
+                <stop offset="100%" style="stop-color:#787878"/>
+            </linearGradient>
+            
+            <!-- GOLD - Brilliant, gleaming 24k gold (SHINY!) -->
+            <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#fff9e6"/>
+                <stop offset="10%" style="stop-color:#ffe766"/>
+                <stop offset="25%" style="stop-color:#ffd700"/>
+                <stop offset="40%" style="stop-color:#ffcc00"/>
+                <stop offset="50%" style="stop-color:#fff0a0"/>
+                <stop offset="60%" style="stop-color:#ffd700"/>
+                <stop offset="75%" style="stop-color:#e6b800"/>
+                <stop offset="90%" style="stop-color:#cc9900"/>
+                <stop offset="100%" style="stop-color:#b38600"/>
+            </linearGradient>
+            
+            <!-- PLATINUM - Polished white gold/platinum (SHINY!) -->
+            <linearGradient id="platinumGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ffffff"/>
+                <stop offset="10%" style="stop-color:#f0f8f4"/>
+                <stop offset="25%" style="stop-color:#e8f5f0"/>
+                <stop offset="40%" style="stop-color:#d0ebe0"/>
+                <stop offset="50%" style="stop-color:#f5fffa"/>
+                <stop offset="60%" style="stop-color:#c8e6d8"/>
+                <stop offset="75%" style="stop-color:#a8d8c0"/>
+                <stop offset="90%" style="stop-color:#80c8a8"/>
+                <stop offset="100%" style="stop-color:#60b890"/>
+            </linearGradient>
+            
+            <!-- DIAMOND - Brilliant crystalline (SUPER SHINY!) -->
+            <linearGradient id="diamondGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#ffffff"/>
+                <stop offset="8%" style="stop-color:#e8f8ff"/>
+                <stop offset="16%" style="stop-color:#ffffff"/>
+                <stop offset="24%" style="stop-color:#d0f0ff"/>
+                <stop offset="32%" style="stop-color:#e0f4ff"/>
+                <stop offset="40%" style="stop-color:#ffffff"/>
+                <stop offset="48%" style="stop-color:#c0e8ff"/>
+                <stop offset="56%" style="stop-color:#f0faff"/>
+                <stop offset="64%" style="stop-color:#ffffff"/>
+                <stop offset="72%" style="stop-color:#b0e0ff"/>
+                <stop offset="80%" style="stop-color:#e8f6ff"/>
+                <stop offset="88%" style="stop-color:#a0d8ff"/>
+                <stop offset="100%" style="stop-color:#70c0f0"/>
+            </linearGradient>
+            
+            <!-- LEGEND - Fiery orange/red with ember glow (SHINY!) -->
+            <linearGradient id="legendGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#fff0e0"/>
+                <stop offset="12%" style="stop-color:#ffcc80"/>
+                <stop offset="25%" style="stop-color:#ff9933"/>
+                <stop offset="40%" style="stop-color:#ff6600"/>
+                <stop offset="50%" style="stop-color:#ffaa44"/>
+                <stop offset="60%" style="stop-color:#ff5500"/>
+                <stop offset="75%" style="stop-color:#ee4400"/>
+                <stop offset="90%" style="stop-color:#cc3300"/>
+                <stop offset="100%" style="stop-color:#aa2200"/>
+            </linearGradient>
+            
+            <!-- ICON - Royal purple with mystical shimmer (SHINY!) -->
+            <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#f8f0ff"/>
+                <stop offset="12%" style="stop-color:#e0c8ff"/>
+                <stop offset="25%" style="stop-color:#c8a0ff"/>
+                <stop offset="40%" style="stop-color:#a070e0"/>
+                <stop offset="50%" style="stop-color:#d0b0ff"/>
+                <stop offset="60%" style="stop-color:#9060d0"/>
+                <stop offset="75%" style="stop-color:#7840b0"/>
+                <stop offset="90%" style="stop-color:#6030a0"/>
+                <stop offset="100%" style="stop-color:#502090"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <h1 class="page-title">Embeddable StatCards</h1>
+
+    <div class="demo-container">
+        <!-- MINI CARDS -->
+        <div class="card-wrapper">
+            <div class="mini-fifa-card gold" id="mini-card">
+                <svg class="card-bg" viewBox="0 0 120 172">
+                    <path fill="url(#goldGrad)" d="M 7.2 0 
+                         L 112.8 0 
+                         Q 120 0 120 7.2 
+                         L 120 146 
+                         Q 120 152 116 156.4 
+                         L 64 171.2 
+                         Q 60 172.8 56 171.2 
+                         L 4 156.4 
+                         Q 0 152 0 146 
+                         L 0 7.2 
+                         Q 0 0 7.2 0 Z"/>
+                </svg>
+                <div class="card-pattern"></div>
+                
+                <div class="mini-card-top">
+                    <div class="mini-rating" id="mini-rating">72</div>
+                    <div class="mini-position" id="mini-position">DEV</div>
+                </div>
+                
+                <div class="mini-avatar-container">
+                    <div class="mini-avatar" id="mini-avatar">JD</div>
+                </div>
+                
+                <div class="mini-name-bar">
+                    <div class="mini-name" id="mini-name">JOHN_DOE</div>
+                </div>
+                
+                <div class="mini-stats-container">
+                    <div class="mini-stat-row left">
+                        <span class="mini-stat-value" id="mini-eng">79</span>
+                        <span class="mini-stat-label">ENG</span>
+                    </div>
+                    <div class="mini-stat-row right">
+                        <span class="mini-stat-value" id="mini-fin">68</span>
+                        <span class="mini-stat-label">FIN</span>
+                    </div>
+                    <div class="mini-stat-row left">
+                        <span class="mini-stat-value" id="mini-cre">83</span>
+                        <span class="mini-stat-label">CRE</span>
+                    </div>
+                    <div class="mini-stat-row right">
+                        <span class="mini-stat-value" id="mini-bus">69</span>
+                        <span class="mini-stat-label">BUS</span>
+                    </div>
+                    <div class="mini-stat-row left">
+                        <span class="mini-stat-value" id="mini-prd">74</span>
+                        <span class="mini-stat-label">PRD</span>
+                    </div>
+                    <div class="mini-stat-row right">
+                        <span class="mini-stat-value" id="mini-res">65</span>
+                        <span class="mini-stat-label">RES</span>
+                    </div>
+                </div>
+                
+                <div class="mini-card-footer">
+                    <span class="mini-rank-badge" id="mini-rank">🏆 RANK #42</span>
+                </div>
+                
+                <div class="mini-card-shine"></div>
+            </div>
+            <span class="size-label">Mini (120×172) - Profile</span>
+        </div>
+
+        <!-- MEDIUM CARDS -->
+        <div class="card-wrapper">
+            <div class="medium-fifa-card gold" id="medium-card">
+                <svg class="card-bg" viewBox="0 0 180 258">
+                    <path fill="url(#goldGrad)" d="M 10.8 0 
+                         L 169.2 0 
+                         Q 180 0 180 10.8 
+                         L 180 219 
+                         Q 180 228 174 234 
+                         L 96 256.8 
+                         Q 90 259.2 84 256.8 
+                         L 6 234 
+                         Q 0 228 0 219 
+                         L 0 10.8 
+                         Q 0 0 10.8 0 Z"/>
+                </svg>
+                <div class="card-pattern"></div>
+                
+                <div class="medium-card-top">
+                    <div class="medium-rating" id="medium-rating">72</div>
+                    <div class="medium-position" id="medium-position">DEV</div>
+                </div>
+                
+                <div class="medium-avatar-container">
+                    <div class="medium-avatar" id="medium-avatar">JD</div>
+                </div>
+                
+                <div class="medium-name-bar">
+                    <div class="medium-name" id="medium-name">JOHN_DOE</div>
+                </div>
+                
+                <div class="medium-stats-container">
+                    <div class="medium-stat-row left">
+                        <span class="medium-stat-value" id="med-eng">79</span>
+                        <span class="medium-stat-label">ENG</span>
+                    </div>
+                    <div class="medium-stat-row right">
+                        <span class="medium-stat-value" id="med-fin">68</span>
+                        <span class="medium-stat-label">FIN</span>
+                    </div>
+                    <div class="medium-stat-row left">
+                        <span class="medium-stat-value" id="med-cre">83</span>
+                        <span class="medium-stat-label">CRE</span>
+                    </div>
+                    <div class="medium-stat-row right">
+                        <span class="medium-stat-value" id="med-bus">69</span>
+                        <span class="medium-stat-label">BUS</span>
+                    </div>
+                    <div class="medium-stat-row left">
+                        <span class="medium-stat-value" id="med-prd">74</span>
+                        <span class="medium-stat-label">PRD</span>
+                    </div>
+                    <div class="medium-stat-row right">
+                        <span class="medium-stat-value" id="med-res">65</span>
+                        <span class="medium-stat-label">RES</span>
+                    </div>
+                </div>
+                
+                <div class="medium-card-footer">
+                    <span class="medium-rank-badge" id="medium-rank">🏆 RANK #42</span>
+                </div>
+                
+                <div class="medium-card-shine"></div>
+            </div>
+            <span class="size-label">Medium (180×258) - Sidebar</span>
+        </div>
+    </div>
+
+    <script>
+        const TIERS = [
+            { id: 'bronze', name: 'BRONZE', min: 0, max: 999, gradient: 'bronzeGrad' },
+            { id: 'silver', name: 'SILVER', min: 1000, max: 1399, gradient: 'silverGrad' },
+            { id: 'gold', name: 'GOLD', min: 1400, max: 1799, gradient: 'goldGrad' },
+            { id: 'platinum', name: 'PLATINUM', min: 1800, max: 2199, gradient: 'platinumGrad' },
+            { id: 'diamond', name: 'DIAMOND', min: 2200, max: 2599, gradient: 'diamondGrad' },
+            { id: 'legend', name: 'LEGEND', min: 2600, max: 2999, gradient: 'legendGrad' },
+            { id: 'icon', name: 'ICON', min: 3000, max: Infinity, gradient: 'iconGrad' }
+        ];
+
+        function getTier(rating) {
+            for (const tier of TIERS) {
+                if (rating >= tier.min && rating <= tier.max) return tier;
+            }
+            return TIERS[0];
+        }
+
+        function getInitials(name) {
+            if (!name) return '??';
+            const parts = name.split(/[\s._-]+/);
+            return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : name.substring(0, 2).toUpperCase();
+        }
+
+        function ratingToOvr(rating) {
+            return Math.min(99, Math.max(40, Math.round(40 + (rating - 500) * (59 / 2500))));
+        }
+
+        function getBestArchetype(stats) {
+            const labels = { engineering: 'DEV', finance: 'FIN', creative: 'CRE', business_ops: 'BUS', product: 'PRD', research: 'RES' };
+            let best = 'engineering', bestRating = 0;
+            for (const [arch, stat] of Object.entries(stats)) {
+                if (stat.rating > bestRating) { bestRating = stat.rating; best = arch; }
+            }
+            return labels[best] || 'DEV';
+        }
+
+        function renderCards(data) {
+            const tier = getTier(data.blendedRating);
+            const ovr = ratingToOvr(data.blendedRating);
+            
+            // Update Mini Card
+            const miniCard = document.getElementById('mini-card');
+            miniCard.className = `mini-fifa-card ${tier.id}`;
+            miniCard.querySelector('svg path').setAttribute('fill', `url(#${tier.gradient})`);
+            document.getElementById('mini-rating').textContent = ovr;
+            document.getElementById('mini-position').textContent = getBestArchetype(data.stats);
+            document.getElementById('mini-avatar').textContent = getInitials(data.userId);
+            document.getElementById('mini-name').textContent = data.userId.toUpperCase();
+            document.getElementById('mini-rank').textContent = `🏆 RANK #${data.rank}`;
+            
+            // Mini Stats
+            document.getElementById('mini-eng').textContent = ratingToOvr(data.stats.engineering?.rating || 1000);
+            document.getElementById('mini-fin').textContent = ratingToOvr(data.stats.finance?.rating || 1000);
+            document.getElementById('mini-cre').textContent = ratingToOvr(data.stats.creative?.rating || 1000);
+            document.getElementById('mini-bus').textContent = ratingToOvr(data.stats.business_ops?.rating || 1000);
+            document.getElementById('mini-prd').textContent = ratingToOvr(data.stats.product?.rating || 1000);
+            document.getElementById('mini-res').textContent = ratingToOvr(data.stats.research?.rating || 1000);
+
+            // Update Medium Card
+            const medCard = document.getElementById('medium-card');
+            medCard.className = `medium-fifa-card ${tier.id}`;
+            medCard.querySelector('svg path').setAttribute('fill', `url(#${tier.gradient})`);
+            document.getElementById('medium-rating').textContent = ovr;
+            document.getElementById('medium-position').textContent = getBestArchetype(data.stats);
+            document.getElementById('medium-avatar').textContent = getInitials(data.userId);
+            document.getElementById('medium-name').textContent = data.userId.toUpperCase();
+            document.getElementById('medium-rank').textContent = `🏆 RANK #${data.rank}`;
+            
+            // Medium Stats
+            document.getElementById('med-eng').textContent = ratingToOvr(data.stats.engineering?.rating || 1000);
+            document.getElementById('med-fin').textContent = ratingToOvr(data.stats.finance?.rating || 1000);
+            document.getElementById('med-cre').textContent = ratingToOvr(data.stats.creative?.rating || 1000);
+            document.getElementById('med-bus').textContent = ratingToOvr(data.stats.business_ops?.rating || 1000);
+            document.getElementById('med-prd').textContent = ratingToOvr(data.stats.product?.rating || 1000);
+            document.getElementById('med-res').textContent = ratingToOvr(data.stats.research?.rating || 1000);
+        }
+
+        // Demo data
+        const demoData = {
+            userId: 'john_doe',
+            blendedRating: 1600,
+            rank: 42,
+            totalDuels: 156,
+            stats: {
+                engineering: { rating: 1750, wins: 28, losses: 12, draws: 5 },
+                finance: { rating: 1450, wins: 15, losses: 18, draws: 7 },
+                creative: { rating: 1900, wins: 35, losses: 8, draws: 2 },
+                business_ops: { rating: 1520, wins: 20, losses: 15, draws: 5 },
+                product: { rating: 1650, wins: 25, losses: 10, draws: 8 },
+                research: { rating: 1380, wins: 12, losses: 20, draws: 3 }
+            }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCards(demoData);
+        });
+
+        // Export for Series integration
+        window.StatCardEmbed = {
+            render: renderCards,
+            getTier,
+            TIERS
+        };
+    </script>
+</body>
+</html>
