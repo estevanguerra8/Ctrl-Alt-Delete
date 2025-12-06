@@ -1,27 +1,31 @@
 import { buildStatCardDTO } from '../../core/statcardModel';
-import { sendSeriesMessage } from '../../messaging/seriesClient';
+import { getOrCreateUserState } from '../../core/userStore';
 import { logger } from '../../utils/logging';
 
-export async function handleCardCommand(userId: string): Promise<void> {
+/**
+ * Card Handler
+ * !card → short summary + "check profile StatCard"
+ */
+export async function handleCardCommand(userId: string): Promise<string | null> {
   try {
+    logger.info(`📊 !card from: ${userId}`);
+    
+    const userState = getOrCreateUserState(userId);
     const statCard = buildStatCardDTO(userId);
     
     if (!statCard) {
-      await sendSeriesMessage(userId, 'You don\'t have a StatCard yet. Complete a duel to get started!');
-      return;
+      return 'You don\'t have a StatCard yet. Complete a duel to get started!';
     }
     
-    const summary = `📊 Your StatCard:\n` +
-      `Tier: ${statCard.tier.toUpperCase()}\n` +
-      `Rating: ${statCard.blendedRating}\n` +
-      `Rank: #${statCard.rank}\n` +
-      `Total Duels: ${statCard.totalDuels}\n` +
-      `\nCheck your full profile StatCard on your Series profile!`;
+    const response = `📊 Your StatCard\n\n` +
+      `🏆 Tier: ${statCard.tier}\n` +
+      `⭐ Final Elo: ${statCard.finalElo}\n` +
+      `📈 Overall Score: ${statCard.overallScore}/99\n` +
+      `\nCheck your full profile StatCard: /api/statcard/${userId}`;
     
-    await sendSeriesMessage(userId, summary);
-  } catch (error) {
-    logger.error('Error handling card command:', error);
-    await sendSeriesMessage(userId, 'Error fetching your StatCard. Please try again later.');
+    return response;
+  } catch (error: any) {
+    logger.error(`❌ Error in !card:`, error);
+    return 'Sorry, there was an error fetching your StatCard. Please try again.';
   }
 }
-

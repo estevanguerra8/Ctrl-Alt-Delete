@@ -1,173 +1,104 @@
-// Get duel ID from URL
-const urlParams = new URLSearchParams(window.location.search);
-const duelId = urlParams.get('id') || window.location.pathname.split('/').pop();
+// Frontend logic: load challenge + submit answer
+const API_BASE = window.location.origin;
 
-let challenge = null;
-let userId = null; // TODO: Get from authentication/session
-
-async function loadChallenge() {
-    try {
-        const response = await fetch(`/duel/${duelId}`);
-        if (!response.ok) {
-            throw new Error('Failed to load challenge');
-        }
-        
-        const data = await response.json();
-        challenge = data.challenge;
-        
-        if (!challenge) {
-            throw new Error('Challenge not found');
-        }
-        
-        displayChallenge(challenge);
-    } catch (error) {
-        showError(error.message);
+// Read duel id from URL (e.g. ?duelId=... or /duel/:id)
+function getDuelIdFromURL() {
+    const path = window.location.pathname;
+    const match = path.match(/\/duel\/([^\/]+)/);
+    if (match) {
+        return match[1];
     }
+    const params = new URLSearchParams(window.location.search);
+    return params.get('duelId');
 }
 
-function displayChallenge(challenge) {
-    document.getElementById('loading').classList.add('hidden');
-    document.getElementById('challenge').classList.remove('hidden');
-    
-    document.getElementById('challenge-title').textContent = challenge.title;
-    document.getElementById('challenge-description').textContent = challenge.description;
-    document.getElementById('challenge-difficulty').textContent = `Difficulty: ${challenge.difficulty}`;
-    document.getElementById('challenge-duration').textContent = `Duration: ~${challenge.estimatedDuration} min`;
-    
-    if (challenge.starterCode) {
-        document.getElementById('solution').value = challenge.starterCode;
-    }
-    
-    if (challenge.testCases && challenge.testCases.length > 0) {
-        const testCasesDiv = document.getElementById('test-cases');
-        const testCasesList = document.getElementById('test-cases-list');
-        testCasesDiv.classList.remove('hidden');
-        
-        challenge.testCases.forEach((testCase, index) => {
-            const testCaseDiv = document.createElement('div');
-            testCaseDiv.className = 'test-case';
-            testCaseDiv.innerHTML = `
-                <strong>Test Case ${index + 1}:</strong><br>
-                Input: <code>${testCase.input}</code><br>
-                Expected Output: <code>${testCase.expectedOutput}</code>
-            `;
-            testCasesList.appendChild(testCaseDiv);
-        });
-    }
-    
-    if (challenge.hints && challenge.hints.length > 0) {
-        const hintsList = document.getElementById('hints-list');
-        challenge.hints.forEach((hint) => {
-            const li = document.createElement('li');
-            li.textContent = hint;
-            hintsList.appendChild(li);
-        });
-        
-        document.getElementById('show-hints-btn').addEventListener('click', () => {
-            document.getElementById('hints').classList.toggle('hidden');
-        });
-    } else {
-        document.getElementById('show-hints-btn').style.display = 'none';
-    }
-}
-
-async function submitSolution() {
-    const solution = document.getElementById('solution').value.trim();
-    
-    if (!solution) {
-        showError('Please enter a solution');
+// On load: Fetch /duel/:id JSON and populate the DOM
+async function loadDuel() {
+    const duelId = getDuelIdFromURL();
+    if (!duelId) {
+        document.getElementById('duel-info').innerHTML = '<p>No duel ID found in URL</p>';
         return;
     }
     
-    // TODO: Get userId from authentication
-    if (!userId) {
-        userId = prompt('Enter your user ID:');
-        if (!userId) {
-            showError('User ID is required');
+    try {
+        const response = await fetch(`${API_BASE}/duel/${duelId}`);
+        const data = await response.json();
+        
+        if (!data.duel) {
+            document.getElementById('duel-info').innerHTML = '<p>Duel not found</p>';
             return;
         }
+        
+        const { duel, challenge } = data;
+        
+        document.getElementById('duel-info').innerHTML = `
+            <p><strong>Status:</strong> ${duel.status}</p>
+            <p><strong>Archetype:</strong> ${duel.archetype}</p>
+            <p><strong>Metric:</strong> ${duel.metric}</p>
+            <p><strong>Duration:</strong> ${duel.durationMinutes} minutes</p>
+        `;
+        
+        if (challenge) {
+            document.getElementById('challenge-title').textContent = challenge.title;
+            document.getElementById('challenge-prompt').innerHTML = `<p>${challenge.prompt}</p>`;
+            document.getElementById('challenge-section').style.display = 'block';
+        }
+        
+        if (duel.status === 'finished') {
+            document.getElementById('answer').disabled = true;
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('result').innerHTML = `
+                <h3>Results</h3>
+                <p>Challenger Score: ${duel.scores[duel.challengerId] || 'N/A'}</p>
+                <p>Opponent Score: ${duel.scores[duel.opponentId] || 'N/A'}</p>
+            `;
+            document.getElementById('result').style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error loading duel:', error);
+        document.getElementById('duel-info').innerHTML = '<p>Error loading duel</p>';
     }
+}
+
+// On submit: POST answer to /duel/:id/submit and display result
+document.getElementById('submitBtn').addEventListener('click', async () => {
+    const duelId = getDuelIdFromURL();
+    const answer = document.getElementById('answer').value;
+    const userId = prompt('Enter your user ID:');
     
-    const submitBtn = document.getElementById('submit-btn');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitting...';
+    if (!userId || !answer) {
+        alert('User ID and answer are required');
+        return;
+    }
     
     try {
-        const response = await fetch(`/duel/${duelId}/submit`, {
+        document.getElementById('submitBtn').disabled = true;
+        const response = await fetch(`${API_BASE}/duel/${duelId}/submit`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userId: userId,
-                solution: solution,
-            }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, submission: answer }),
         });
         
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to submit solution');
-        }
+        const result = await response.json();
         
-        const data = await response.json();
-        showResult(data);
-    } catch (error) {
-        showError(error.message);
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Solution';
-    }
-}
-
-function showResult(data) {
-    const resultDiv = document.getElementById('result');
-    resultDiv.classList.remove('hidden');
-    
-    if (data.duel.status === 'completed') {
-        if (data.duel.winnerId === userId) {
-            resultDiv.className = 'result success';
-            resultDiv.innerHTML = `
-                <h3>🎉 Victory!</h3>
-                <p>You won the duel! Your StatCard has been updated.</p>
-                <p>Your score: ${data.duel.challengerSubmission?.score || data.duel.defenderSubmission?.score || 'N/A'}</p>
-            `;
-        } else if (data.duel.winnerId) {
-            resultDiv.className = 'result error';
-            resultDiv.innerHTML = `
-                <h3>Defeat</h3>
-                <p>You lost the duel. Better luck next time!</p>
-                <p>Your score: ${data.duel.challengerSubmission?.score || data.duel.defenderSubmission?.score || 'N/A'}</p>
-            `;
+        if (result.success) {
+            document.getElementById('result').innerHTML = `<p>${result.message}</p>`;
+            document.getElementById('result').style.display = 'block';
+            if (result.score !== undefined) {
+                document.getElementById('result').innerHTML += `<p>Your score: ${result.score}</p>`;
+            }
+            if (result.duel.status === 'finished') {
+                setTimeout(loadDuel, 2000);
+            }
         } else {
-            resultDiv.className = 'result';
-            resultDiv.innerHTML = `
-                <h3>Draw</h3>
-                <p>The duel ended in a draw!</p>
-            `;
+            alert('Error submitting: ' + (result.error || 'Unknown error'));
+            document.getElementById('submitBtn').disabled = false;
         }
-    } else {
-        resultDiv.className = 'result';
-        resultDiv.innerHTML = `
-            <h3>Solution Submitted</h3>
-            <p>Waiting for opponent to submit...</p>
-        `;
+    } catch (error) {
+        console.error('Error submitting:', error);
+        alert('Error submitting answer');
+        document.getElementById('submitBtn').disabled = false;
     }
-    
-    document.getElementById('submit-btn').disabled = true;
-}
+});
 
-function showError(message) {
-    document.getElementById('loading').classList.add('hidden');
-    document.getElementById('challenge').classList.add('hidden');
-    document.getElementById('error').classList.remove('hidden');
-    document.getElementById('error-message').textContent = message;
-}
-
-// Initialize
-document.getElementById('submit-btn').addEventListener('click', submitSolution);
-
-if (duelId) {
-    loadChallenge();
-} else {
-    showError('Duel ID not found in URL');
-}
-
+loadDuel();

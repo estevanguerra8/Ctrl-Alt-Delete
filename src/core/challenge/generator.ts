@@ -1,44 +1,52 @@
-import { Challenge, Archetype } from '../types';
-import { loadTemplates } from './templates';
+import { Challenge, ArchetypeId } from '../types';
+import { getTemplatesForArchetype, getTemplateById } from './templates';
 import { generateId } from '../../utils/validation';
 import { logger } from '../../utils/logging';
-import * as engineeringArchetype from './archetypes/engineering';
 
-export async function generateChallengeFromTemplate(
-  archetype: Archetype,
-  difficulty: 'easy' | 'medium' | 'hard'
+/**
+ * Challenge Generator
+ * Creates Challenge objects from templates/config
+ */
+export async function generateChallenge(
+  archetype: ArchetypeId,
+  metric: keyof import('../types').UserMetrics,
+  templateId?: string
 ): Promise<Challenge> {
-  const templates = await loadTemplates();
-  const archetypeTemplates = templates[archetype] || [];
+  let template: any;
   
-  if (archetypeTemplates.length === 0) {
-    throw new Error(`No templates available for archetype: ${archetype}`);
+  if (templateId) {
+    template = getTemplateById(archetype, templateId);
+  } else {
+    const templates = getTemplatesForArchetype(archetype);
+    if (templates.length === 0) {
+      throw new Error(`No templates found for ${archetype}`);
+    }
+    template = templates[Math.floor(Math.random() * templates.length)];
   }
   
-  // Filter by difficulty if possible
-  const filtered = archetypeTemplates.filter((t: any) => t.difficulty === difficulty);
-  const candidates = filtered.length > 0 ? filtered : archetypeTemplates;
-  
-  // Pick random template
-  const template = candidates[Math.floor(Math.random() * candidates.length)];
+  if (!template) {
+    throw new Error(`No template found for ${archetype}`);
+  }
   
   // Use archetype-specific generator if available
-  if (archetype === 'engineering') {
-    return engineeringArchetype.generateFromTemplate(template, difficulty);
+  try {
+    const archetypeModule = await import(`./archetypes/${archetype}`);
+    if (archetypeModule.generateChallenge) {
+      return archetypeModule.generateChallenge(template, metric);
+    }
+  } catch (error) {
+    logger.warn(`No specific generator for ${archetype}, using default`);
   }
   
-  // Default template-based generation
+  // Default challenge generation
   return {
     id: generateId(),
+    duelId: '', // Will be set when associated with a duel
     archetype,
-    title: template.title,
-    description: template.description,
-    difficulty: template.difficulty || difficulty,
-    estimatedDuration: template.estimatedDuration || 30,
-    testCases: template.testCases || [],
-    starterCode: template.starterCode,
-    hints: template.hints,
-    templateId: template.id,
+    metric,
+    title: template.title || `${archetype} Challenge`,
+    prompt: template.description || template.prompt || `Complete the ${metric} challenge`,
+    difficulty: template.difficulty || 'medium',
+    createdAt: Date.now(),
   };
 }
-

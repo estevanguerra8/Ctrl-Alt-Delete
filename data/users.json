@@ -1,2 +1,92 @@
-[]
-
+[
+  {
+    "userId": "test123",
+    "archetype": "engineering",
+    "metrics": {
+      "technical": 50,
+      "strategy": 50,
+      "execution": 50,
+      "aura": 50,
+      "experience": 50
+    },
+    "duelElo": 1000,
+    "finalElo": 1000,
+    "tier": "Bronze",
+    "overallScore": 50,
+    "streakDays": 0,
+    "lastActiveAt": 1765006167373,
+    "ranks": {}
+  },
+  {
+    "userId": "testuser123",
+    "archetype": "engineering",
+    "metrics": {
+      "technical": 50,
+      "strategy": 50,
+      "execution": 50,
+      "aura": 50,
+      "experience": 50
+    },
+    "duelElo": 1000,
+    "finalElo": 1000,
+    "tier": "Bronze",
+    "overallScore": 50,
+    "streakDays": 0,
+    "lastActiveAt": 1765006219522,
+    "ranks": {}
+  },
+  {
+    "userId": "testuser",
+    "archetype": "engineering",
+    "metrics": {
+      "technical": 50,
+      "strategy": 50,
+      "execution": 50,
+      "aura": 50,
+      "experience": 50
+    },
+    "duelElo": 1000,
+    "finalElo": 1000,
+    "tier": "Bronze",
+    "overallScore": 50,
+    "streakDays": 0,
+    "lastActiveAt": 1765007646627,
+    "ranks": {}
+  },
+  {
+    "userId": "+17868735256",
+    "archetype": "engineering",
+    "metrics": {
+      "technical": 50,
+      "strategy": 50,
+      "execution": 50,
+      "aura": 50,
+      "experience": 50
+    },
+    "duelElo": 1000,
+    "finalElo": 1000,
+    "tier": "Bronze",
+    "overallScore": 50,
+    "streakDays": 0,
+    "lastActiveAt": 1765010074608,
+    "ranks": {}
+  },
+  {
+    "userId": "+12144988136",
+    "archetype": "engineering",
+    "metrics": {
+      "technical": 50,
+      "strategy": 50,
+      "execution": 50,
+      "aura": 50,
+      "experience": 50
+    },
+    "duelElo": 1000,
+    "finalElo": 1000,
+    "tier": "Bronze",
+    "overallScore": 50,
+    "streakDays": 0,
+    "lastActiveAt": 1765010221086,
+    "ranks": {}
+  }
+]

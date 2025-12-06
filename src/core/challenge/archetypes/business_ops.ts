@@ -1,17 +1,9 @@
-// Stub implementation for business_ops archetype
-
-import { Challenge } from '../../types';
-
-export function generateFromTemplate(
-  template: any,
-  difficulty: 'easy' | 'medium' | 'hard'
-): Challenge {
-  // TODO: Implement business_ops challenge generation
-  throw new Error('Business Ops archetype not yet implemented');
+// Stub implementation for business_ops challenges
+export async function generateChallenge(template: any, difficulty: string): Promise<any> {
+  throw new Error('Business ops challenges not yet implemented');
 }
 
-export async function gradeSolution(challenge: Challenge, solution: string): Promise<number> {
-  // TODO: Implement business_ops challenge grading
-  throw new Error('Business Ops archetype not yet implemented');
+export async function gradeSubmission(challenge: any, submission: string): Promise<number> {
+  throw new Error('Business ops grading not yet implemented');
 }
 

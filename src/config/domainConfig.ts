@@ -1,70 +1,37 @@
-import configData from './config.json';
-import { logger } from '../utils/logging';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
-export interface ArchetypeConfig {
-  name: string;
-  weight: number;
-  enabled: boolean;
-}
-
-export interface TierConfig {
-  min: number;
-  max: number | null;
-  name: string;
-}
-
-export interface EloConfig {
-  initialRating: number;
-  kFactor: number;
-  minRating: number;
-  maxRating: number;
-}
-
-export interface DomainConfig {
-  archetypes: Record<string, ArchetypeConfig>;
-  tiers: Record<string, TierConfig>;
-  elo: EloConfig;
+export interface Config {
+  archetypes: string[];
+  metrics: Record<string, any>;
+  tiers: Record<string, { minRating: number; maxRating: number | null }>;
+  elo: {
+    initialRating: number;
+    kFactor: number;
+    blendWeights: Record<string, number>;
+  };
   demo: {
     enabled: boolean;
     seedUsers: string[];
   };
 }
 
-let config: DomainConfig | null = null;
+let cachedConfig: Config | null = null;
 
-export function loadConfig(): DomainConfig {
-  if (!config) {
-    config = configData as DomainConfig;
-    logger.info('Domain config loaded');
+export function getConfig(): Config {
+  if (cachedConfig) {
+    return cachedConfig;
   }
-  return config;
+
+  // Use process.cwd() to find config files in source directory
+  const configPath = join(process.cwd(), 'src', 'config', 'config.json');
+  const configData = readFileSync(configPath, 'utf-8');
+  cachedConfig = JSON.parse(configData);
+  return cachedConfig!;
 }
 
-export function getConfig(): DomainConfig {
-  return loadConfig();
-}
-
-export function getArchetypeConfig(archetype: string): ArchetypeConfig | null {
-  const cfg = getConfig();
-  return cfg.archetypes[archetype] || null;
-}
-
-export function getTierForRating(rating: number): string {
-  const cfg = getConfig();
-  const tiers = Object.entries(cfg.tiers).sort((a, b) => b[1].min - a[1].min);
-  
-  for (const [tierName, tierConfig] of tiers) {
-    if (rating >= tierConfig.min && (tierConfig.max === null || rating < tierConfig.max)) {
-      return tierName;
-    }
-  }
-  return 'bronze';
-}
-
-export function getEnabledArchetypes(): string[] {
-  const cfg = getConfig();
-  return Object.entries(cfg.archetypes)
-    .filter(([_, arch]) => arch.enabled)
-    .map(([name]) => name);
+export function reloadConfig(): Config {
+  cachedConfig = null;
+  return getConfig();
 }
 

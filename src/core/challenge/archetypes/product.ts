@@ -1,17 +1,9 @@
-// Stub implementation for product archetype
-
-import { Challenge } from '../../types';
-
-export function generateFromTemplate(
-  template: any,
-  difficulty: 'easy' | 'medium' | 'hard'
-): Challenge {
-  // TODO: Implement product challenge generation
-  throw new Error('Product archetype not yet implemented');
+// Stub implementation for product challenges
+export async function generateChallenge(template: any, difficulty: string): Promise<any> {
+  throw new Error('Product challenges not yet implemented');
 }
 
-export async function gradeSolution(challenge: Challenge, solution: string): Promise<number> {
-  // TODO: Implement product challenge grading
-  throw new Error('Product archetype not yet implemented');
+export async function gradeSubmission(challenge: any, submission: string): Promise<number> {
+  throw new Error('Product grading not yet implemented');
 }
 

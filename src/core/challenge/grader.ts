@@ -1,35 +1,47 @@
-import { Challenge, Submission } from '../types';
+import { Challenge, Submission, ArchetypeId } from '../types';
 import { logger } from '../../utils/logging';
-import * as engineeringArchetype from './archetypes/engineering';
 
+/**
+ * Challenge Grader
+ * Grades submissions (0–100) using simple logic/LLM client
+ */
 export async function gradeSubmission(
   challenge: Challenge,
-  solution: string
+  submission: Submission,
+  archetype: ArchetypeId
 ): Promise<number> {
   // Use archetype-specific grader if available
-  if (challenge.archetype === 'engineering') {
-    return engineeringArchetype.gradeSolution(challenge, solution);
+  try {
+    const archetypeModule = await import(`./archetypes/${archetype}`);
+    if (archetypeModule.gradeSubmission) {
+      return await archetypeModule.gradeSubmission(challenge, submission);
+    }
+  } catch (error) {
+    logger.warn(`No specific grader for ${archetype}, using default`);
   }
   
-  // Default grading (stub)
-  logger.warn(`Grading not implemented for archetype: ${challenge.archetype}`);
-  return 50; // Placeholder score
+  // Default grading: simple heuristic
+  return defaultGrade(challenge, submission);
 }
 
-export function determineWinner(
-  submission1: Submission,
-  submission2: Submission
-): string | null {
-  if (!submission1.score || !submission2.score) {
-    return null; // Can't determine winner without scores
+function defaultGrade(challenge: Challenge, submission: Submission): number {
+  if (!submission.answer || submission.answer.trim().length === 0) {
+    return 0;
   }
   
-  if (submission1.score > submission2.score) {
-    return submission1.userId;
-  } else if (submission2.score > submission1.score) {
-    return submission2.userId;
-  } else {
-    return null; // Draw
+  // Basic scoring: 50 base + up to 50 for quality
+  let score = 50;
+  
+  // Check if submission addresses the challenge
+  const keywords = challenge.prompt.toLowerCase().split(/\s+/);
+  const submissionLower = submission.answer.toLowerCase();
+  const matches = keywords.filter((k: string) => submissionLower.includes(k)).length;
+  score += Math.min(30, (matches / keywords.length) * 30);
+  
+  // Length bonus (up to 20 points)
+  if (submission.answer.length > 100) {
+    score += Math.min(20, (submission.answer.length - 100) / 10);
   }
+  
+  return Math.min(100, Math.round(score));
 }
-

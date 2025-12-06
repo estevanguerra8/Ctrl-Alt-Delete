@@ -1,60 +1,63 @@
 # Series StatCard Service
 
-A gamified StatCard system for the Series "Future Feels Human" Hackathon.
+A gamified, multi-profession StatCard + async duel system that lives inside **Series**.
 
-## Features
+## Quick Start
 
-- **StatCard System**: User profiles with gamified statistics
-- **Async Duel System**: Head-to-head challenges via Series chat commands
-- **Challenge Engine**: LLM-powered or template-based challenge generation
-- **Elo Rating**: Blended rating system across multiple archetypes
-- **Leaderboards**: Track rankings and progress
+1. **Copy `.env.example` to `.env`** and fill in your credentials:
+   - Series API credentials (see `iMessage Service API Docs.pdf`)
+   - Kafka credentials (see `Series Hackathon Dashboard.pdf`)
 
-## Architecture
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-- Single Node.js + TypeScript service
-- Kafka consumer for Series events
-- HTTP server (Express) for API and static files
-- In-memory data with JSON persistence
+3. **Build:**
+   ```bash
+   npm run build
+   ```
 
-## Setup
+4. **Start:**
+   ```bash
+   npm start
+   ```
 
-1. Install dependencies:
-```bash
-npm install
+## Core Flows
+
+- Users send commands in Series chat:
+  - `!card` - Get your stat card
+  - `!leaderboard` - View leaderboard
+  - `!duel @user technical 30m` - Challenge a user
+  - `!progress` - View your progress
+
+- Series pushes inbound messages to our **Kafka topic**
+- Our **Kafka consumer** processes commands and sends responses via **Series HTTP API**
+- Users click duel links → open our **duel page** (served by our HTTP server)
+
+## Project Structure
+
+```
+src/
+  ├── index.ts              # Main entry point
+  ├── config/               # Configuration files
+  ├── api/                  # HTTP server and routes
+  ├── kafka/                # Kafka consumer
+  ├── messaging/            # Series API client
+  ├── core/                 # Core business logic
+  ├── commands/              # Command handlers
+  └── utils/                 # Utilities
 ```
 
-2. Copy `.env.example` to `.env` and configure:
+## Environment Variables
+
+All credentials and connection details are configured via `.env`. See `.env.example` for required variables.
+
+## Development
+
 ```bash
-cp .env.example .env
+npm run dev        # Run with ts-node
+npm run demo       # Run demo events
+npm run producer   # Test Kafka producer
+npm run seed       # Seed challenge templates
 ```
-
-3. Build:
-```bash
-npm run build
-```
-
-4. Run:
-```bash
-npm start
-```
-
-For development:
-```bash
-npm run dev
-```
-
-## Commands
-
-- `!card` - Show your StatCard summary
-- `!duel @user archetype duration` - Initiate a duel
-- `!accept duelId` - Accept a pending duel
-- `!duel_status duelId` - Check duel status
-- `!leaderboard [metric]` - View leaderboard
-- `!progress` - View your progress over time
-
-## API Endpoints
-
-- `GET /api/statcard/:userId` - Get user's StatCard
-- `GET /duel/:id` - Get duel challenge page
-- `POST /duel/:id/submit` - Submit duel solution

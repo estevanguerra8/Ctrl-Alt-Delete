@@ -1,17 +1,9 @@
-// Stub implementation for creative archetype
-
-import { Challenge } from '../../types';
-
-export function generateFromTemplate(
-  template: any,
-  difficulty: 'easy' | 'medium' | 'hard'
-): Challenge {
-  // TODO: Implement creative challenge generation
-  throw new Error('Creative archetype not yet implemented');
+// Stub implementation for creative challenges
+export async function generateChallenge(template: any, difficulty: string): Promise<any> {
+  throw new Error('Creative challenges not yet implemented');
 }
 
-export async function gradeSolution(challenge: Challenge, solution: string): Promise<number> {
-  // TODO: Implement creative challenge grading
-  throw new Error('Creative archetype not yet implemented');
+export async function gradeSubmission(challenge: any, submission: string): Promise<number> {
+  throw new Error('Creative grading not yet implemented');
 }
 

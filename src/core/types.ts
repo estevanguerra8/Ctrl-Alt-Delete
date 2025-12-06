@@ -1,89 +1,91 @@
-export type Archetype = 'engineering' | 'finance' | 'creative' | 'business_ops' | 'product' | 'research';
+export type ArchetypeId =
+  | "engineering"
+  | "finance"
+  | "creative"
+  | "business_ops"
+  | "product"
+  | "research";
 
-export interface StatSnapshot {
-  archetype: Archetype;
-  rating: number;
-  wins: number;
-  losses: number;
-  draws: number;
-  lastUpdated: string;
+export interface UserMetrics {
+  technical: number;
+  strategy: number;
+  execution: number;
+  aura: number;
+  experience: number;
+}
+
+export interface UserRanks {
+  overall?: number;
+  technical?: number;
+  strategy?: number;
+  execution?: number;
+  aura?: number;
 }
 
 export interface UserState {
   userId: string;
-  stats: Record<Archetype, StatSnapshot>;
-  blendedRating: number;
-  tier: string;
-  rank: number;
-  totalDuels: number;
-  createdAt: string;
-  updatedAt: string;
+  archetype: ArchetypeId;
+  metrics: UserMetrics;
+  duelElo: number;
+  finalElo: number;
+  tier: string;          // Bronze / Silver / Gold / Diamond / Mythic
+  overallScore: number;  // 0–99
+  streakDays: number;
+  lastActiveAt: number;
+  ranks: UserRanks;
 }
+
+export type DuelStatus = "pending" | "active" | "finished";
 
 export interface Duel {
   id: string;
+  archetype: ArchetypeId;
+  metric: keyof UserMetrics;
   challengerId: string;
-  defenderId: string;
-  archetype: Archetype;
-  status: 'pending' | 'active' | 'completed' | 'expired';
-  challengeId: string | null;
-  challenge: Challenge | null;
-  challengerSubmission: Submission | null;
-  defenderSubmission: Submission | null;
-  winnerId: string | null;
-  createdAt: string;
-  expiresAt: string;
-  completedAt: string | null;
+  opponentId: string;
+  createdAt: number;
+  startTime?: number;
+  endTime?: number;
+  durationMinutes: number;
+  status: DuelStatus;
+  scores: Record<string, number>;
 }
 
-export interface Challenge {
-  id: string;
-  archetype: Archetype;
-  title: string;
-  description: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  estimatedDuration: number;
-  testCases: TestCase[];
-  starterCode?: string;
-  hints?: string[];
-  templateId?: string;
-}
-
-export interface TestCase {
-  input: string;
-  expectedOutput: string;
-  hidden?: boolean;
-}
-
-export interface Submission {
-  userId: string;
-  solution: string;
-  submittedAt: string;
-  score: number | null;
-  gradedAt: string | null;
+export interface StatCardMetric {
+  key: keyof UserMetrics;
+  label: string;
+  emoji: string;
+  value: number;
 }
 
 export interface StatCardDTO {
   userId: string;
+  archetypeId: ArchetypeId;
+  archetypeName: string;
+  primaryEmoji: string;
+  overallScore: number;
   tier: string;
-  blendedRating: number;
-  rank: number;
-  stats: Record<Archetype, {
-    rating: number;
-    wins: number;
-    losses: number;
-    draws: number;
-    winRate: number;
-  }>;
-  totalDuels: number;
-  lastUpdated: string;
+  finalElo: number;
+  metrics: StatCardMetric[];
+  badges: string[];
 }
 
-export interface LeaderboardEntry {
+export interface Challenge {
+  id: string;
+  duelId: string;
+  archetype: ArchetypeId;
+  metric: keyof UserMetrics;
+  title: string;
+  prompt: string;
+  difficulty: "easy" | "medium" | "hard";
+  createdAt: number;
+}
+
+export interface Submission {
+  id: string;
+  duelId: string;
   userId: string;
-  blendedRating: number;
-  rank: number;
-  tier: string;
-  totalDuels: number;
+  answer: string;
+  submittedAt: number;
+  score?: number;
 }
-

@@ -1,142 +1,125 @@
 import { Kafka, Consumer } from 'kafkajs';
 import { logger } from '../utils/logging';
-import { processInboundMessage } from '../commands/router';
-import { AppEvent, InboundMessageEvent, SeriesKafkaEvent } from './types';
+import { AppEvent, SeriesKafkaEvent } from './types';
 
-let consumer: Consumer | null = null;
-
-function getKafkaConfig() {
-  const brokers = (process.env.KAFKA_BROKERS || 'localhost:9092').split(',');
-  const clientId = process.env.KAFKA_CLIENT_ID || 'statcard-service';
+/**
+ * Kafka Consumer for Series Sandbox Messaging Environment
+ * 
+ * Configure brokers, SASL, and topic names according to Series Hackathon Dashboard.pdf.
+ * Environment variables required:
+ * - KAFKA_BROKERS
+ * - KAFKA_USERNAME (SASL username)
+ * - KAFKA_PASSWORD (SASL password)
+ * - KAFKA_TOPIC
+ * - KAFKA_GROUP_ID
+ */
+export async function startConsumer(
+  handleEvent: (event: AppEvent) => Promise<void>
+): Promise<void> {
+  // Read env vars - see Series Hackathon Dashboard.pdf for actual values
+  const brokers = (process.env.KAFKA_BROKERS || '').split(',').filter(Boolean);
+  const topic = process.env.KAFKA_TOPIC || '';
+  const groupId = process.env.KAFKA_GROUP_ID || 'series-statcard-consumer';
+  // Support both naming conventions
+  const username = process.env.KAFKA_USERNAME || process.env.KAFKA_SASL_USERNAME || '';
+  const password = process.env.KAFKA_PASSWORD || process.env.KAFKA_SASL_PASSWORD || '';
   
-  // SASL configuration for Confluent Cloud
-  const saslUsername = process.env.KAFKA_SASL_USERNAME;
-  const saslPassword = process.env.KAFKA_SASL_PASSWORD;
-  const saslMechanism = process.env.KAFKA_SASL_MECHANISM || 'PLAIN';
-  
-  const kafkaConfig: any = {
-    clientId,
-    brokers,
-  };
-  
-  // Add SASL configuration if credentials are provided
-  if (saslUsername && saslPassword) {
-    kafkaConfig.ssl = true;
-    kafkaConfig.sasl = {
-      mechanism: saslMechanism,
-      username: saslUsername,
-      password: saslPassword,
-    };
-    logger.info(`Kafka configured with SASL_SSL for brokers: ${brokers.join(', ')}`);
-  } else {
-    logger.warn('Kafka SASL credentials not found, using plain connection');
+  if (!brokers.length || !topic) {
+    logger.warn('Kafka brokers or topic not configured, skipping consumer');
+    logger.warn('See Series Hackathon Dashboard.pdf for Kafka configuration');
+    return;
   }
-  
-  return kafkaConfig;
-}
-
-export async function startKafkaConsumer(): Promise<void> {
-  const brokers = (process.env.KAFKA_BROKERS || 'localhost:9092').split(',');
-  const topic = process.env.KAFKA_TOPIC || 'series_team_events';
-  const groupId = process.env.KAFKA_GROUP_ID || 'statcard-service';
   
   logger.info(`Connecting to Kafka brokers: ${brokers.join(', ')}`);
   logger.info(`Topic: ${topic}, Group ID: ${groupId}`);
   
-  // Debug: Check if SASL credentials are loaded
-  if (process.env.KAFKA_SASL_USERNAME && process.env.KAFKA_SASL_PASSWORD) {
-    logger.info('Kafka SASL credentials found');
-  } else {
-    logger.warn('Kafka SASL credentials not found in environment variables');
-  }
+  // Set up SASL/PLAIN auth using env vars
+  const kafkaConfig: any = {
+    clientId: 'series-statcard-service',
+    brokers,
+  };
   
-  const kafkaConfig = getKafkaConfig();
-  const kafka = new Kafka(kafkaConfig);
-  
-  consumer = kafka.consumer({ groupId });
-  
-  await consumer.connect();
-  logger.info('Kafka consumer connected');
-  
-  await consumer.subscribe({ topic, fromBeginning: false });
-  
-  await consumer.run({
-    eachMessage: async ({ topic, partition, message }) => {
-      try {
-        if (!message.value) {
-          return;
-        }
-        
-        logger.info(`Received message from topic ${topic}, partition ${partition}`);
-        const event: AppEvent = JSON.parse(message.value.toString());
-        await handleEvent(event);
-      } catch (error) {
-        logger.error('Error processing Kafka message:', error);
-      }
-    },
-  });
-  
-  logger.info(`✅ Kafka consumer subscribed and listening to topic: ${topic}`);
-  logger.info('📨 Waiting for messages from Series...');
-}
-
-async function handleEvent(event: SeriesKafkaEvent | AppEvent): Promise<void> {
-  // Handle Series Kafka event format (message.received, etc.)
-  if ('event_type' in event) {
-    const seriesEvent = event as SeriesKafkaEvent;
-    
-    switch (seriesEvent.event_type) {
-      case 'message.received':
-        await handleSeriesMessageReceived(seriesEvent);
-        break;
-      case 'typing_indicator.received':
-      case 'typing_indicator.removed':
-        // TODO: Handle typing indicators if needed
-        logger.debug('Typing indicator event:', seriesEvent.event_type);
-        break;
-      default:
-        logger.warn('Unknown Series event type:', seriesEvent.event_type);
-    }
-    return;
-  }
-  
-  // Handle legacy AppEvent format
-  switch (event.type) {
-    case 'inbound_message':
-      await processInboundMessage(event as InboundMessageEvent);
-      break;
-    case 'stat_update':
-      // TODO: Handle stat updates from external sources
-      logger.info('Stat update event received:', event);
-      break;
-    default:
-      logger.warn('Unknown event type:', event.type);
-  }
-}
-
-async function handleSeriesMessageReceived(event: SeriesKafkaEvent): Promise<void> {
-  try {
-    const { data } = event;
-    const messageText = data.text;
-    const fromPhone = data.from_phone;
-    const chatId = data.chat_id;
-    
-    // Convert phone number to userId (remove + and spaces, or use phone as-is)
-    const userId = fromPhone.replace(/[+\s-()]/g, '');
-    
-    // Create InboundMessageEvent from Series format
-    const inboundEvent: InboundMessageEvent = {
-      type: 'inbound_message',
-      userId,
-      channelId: chatId,
-      message: messageText,
-      messageId: data.id,
-      timestamp: event.created_at,
+  if (username && password) {
+    kafkaConfig.ssl = true;
+    kafkaConfig.sasl = {
+      mechanism: 'PLAIN',
+      username,
+      password,
     };
+    logger.info('Kafka configured with SASL_SSL');
+    logger.debug(`Using SASL username: ${username.substring(0, 5)}...`);
+  } else {
+    logger.error('❌ Kafka SASL credentials not found!');
+    logger.error('Required env vars: KAFKA_USERNAME (or KAFKA_SASL_USERNAME) and KAFKA_PASSWORD (or KAFKA_SASL_PASSWORD)');
+    logger.error('See Series Hackathon Dashboard.pdf for Kafka SASL credentials');
+    throw new Error('Kafka SASL credentials are required');
+  }
+  
+  const kafka = new Kafka(kafkaConfig);
+  const consumer = kafka.consumer({ groupId });
+  
+  try {
+    await consumer.connect();
+    logger.info('Kafka consumer connected');
     
-    await processInboundMessage(inboundEvent);
-  } catch (error) {
-    logger.error('Error handling Series message.received event:', error);
+    // Subscribe to KAFKA_TOPIC
+    await consumer.subscribe({ topic, fromBeginning: false });
+    
+    await consumer.run({
+      eachMessage: async ({ topic, partition, message }) => {
+        try {
+          if (!message.value) {
+            return;
+          }
+          
+          const rawMessage = message.value.toString();
+          logger.info(`📨 Received message from topic ${topic}, partition ${partition}`);
+          logger.info(`📄 Raw message: ${rawMessage.substring(0, 200)}...`);
+          
+          // Parse JSON into AppEvent or SeriesKafkaEvent
+          const event: any = JSON.parse(rawMessage);
+          
+          // Handle Series Kafka event format
+          if ('event_type' in event) {
+            const seriesEvent = event as unknown as SeriesKafkaEvent;
+            logger.info(`🔍 Event type: ${seriesEvent.event_type}`);
+            if (seriesEvent.event_type === 'message.received') {
+              logger.info(`💬 Processing message from ${seriesEvent.data.from_phone} in chat ${seriesEvent.data.chat_id}`);
+              logger.info(`📝 Message text: "${seriesEvent.data.text}"`);
+              // Convert Series event to InboundMessageEvent
+              const inboundEvent: AppEvent = {
+                type: 'inbound_message',
+                userId: seriesEvent.data.from_phone,
+                conversationId: seriesEvent.data.chat_id,
+                text: seriesEvent.data.text,
+                timestamp: new Date(seriesEvent.created_at).getTime(),
+              };
+              logger.info(`🚀 Calling handleEvent for inbound_message`);
+              await handleEvent(inboundEvent);
+            } else {
+              logger.info(`⚠️ Ignoring event type: ${seriesEvent.event_type}`);
+            }
+          } else {
+            // Handle standard AppEvent format
+            logger.info(`🔍 Processing standard AppEvent format`);
+            await handleEvent(event as AppEvent);
+          }
+        } catch (error: any) {
+          logger.error('Error processing Kafka message:', error);
+        }
+      },
+    });
+    
+    logger.info(`✅ Kafka consumer subscribed and listening to topic: ${topic}`);
+  } catch (error: any) {
+    logger.error('Failed to start Kafka consumer:', error);
+    logger.error('See Series Hackathon Dashboard.pdf for correct Kafka configuration');
+    throw error;
   }
 }
 
+// Legacy export for backward compatibility
+export async function startKafkaConsumer(): Promise<void> {
+  // This will be called from index.ts with proper event handler
+  logger.warn('startKafkaConsumer() called without handler - use startConsumer() instead');
+}

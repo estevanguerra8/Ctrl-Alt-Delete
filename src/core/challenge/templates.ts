@@ -1,25 +1,31 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { logger } from '../../utils/logging';
+import { ArchetypeId } from '../types';
 
-// Use process.cwd() for runtime path resolution
-const CONFIG_DIR = join(process.cwd(), 'src/config');
-const TEMPLATES_FILE = join(CONFIG_DIR, 'challengeTemplates.json');
+let cachedTemplates: Record<string, any[]> | null = null;
 
-let cachedTemplates: any = null;
-
-export async function loadTemplates(): Promise<any> {
+/**
+ * Loads challengeTemplates.json
+ * Exports helper to pick a template for a given archetype/metric/difficulty
+ */
+export function loadTemplates(): Record<string, any[]> {
   if (cachedTemplates) {
     return cachedTemplates;
   }
   
-  try {
-    const data = readFileSync(TEMPLATES_FILE, 'utf-8');
-    cachedTemplates = JSON.parse(data);
-    return cachedTemplates;
-  } catch (error) {
-    logger.error('Error loading challenge templates:', error);
-    return {};
-  }
+  // Use process.cwd() to find config files in source directory
+  const templatesPath = join(process.cwd(), 'src', 'config', 'challengeTemplates.json');
+  const templatesData = readFileSync(templatesPath, 'utf-8');
+  cachedTemplates = JSON.parse(templatesData);
+  return cachedTemplates!;
 }
 
+export function getTemplatesForArchetype(archetype: ArchetypeId): any[] {
+  const templates = loadTemplates();
+  return templates[archetype] || [];
+}
+
+export function getTemplateById(archetype: ArchetypeId, templateId: string): any | null {
+  const templates = getTemplatesForArchetype(archetype);
+  return templates.find(t => t.id === templateId) || null;
+}

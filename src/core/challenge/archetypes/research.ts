@@ -1,17 +1,9 @@
-// Stub implementation for research archetype
-
-import { Challenge } from '../../types';
-
-export function generateFromTemplate(
-  template: any,
-  difficulty: 'easy' | 'medium' | 'hard'
-): Challenge {
-  // TODO: Implement research challenge generation
-  throw new Error('Research archetype not yet implemented');
+// Stub implementation for research challenges
+export async function generateChallenge(template: any, difficulty: string): Promise<any> {
+  throw new Error('Research challenges not yet implemented');
 }
 
-export async function gradeSolution(challenge: Challenge, solution: string): Promise<number> {
-  // TODO: Implement research challenge grading
-  throw new Error('Research archetype not yet implemented');
+export async function gradeSubmission(challenge: any, submission: string): Promise<number> {
+  throw new Error('Research grading not yet implemented');
 }
 

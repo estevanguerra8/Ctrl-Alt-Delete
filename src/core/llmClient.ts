@@ -1,48 +1,57 @@
-// LLM client abstraction (mock implementation for now)
-
+import axios from 'axios';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { logger } from '../utils/logging';
 
-export interface LLMRequest {
-  systemPrompt: string;
-  userPrompt: string;
-  temperature?: number;
-  maxTokens?: number;
-}
+const LLM_CONFIG = JSON.parse(
+  readFileSync(join(__dirname, '../config/llmConfig.json'), 'utf-8')
+);
 
-export interface LLMResponse {
-  content: string;
-  usage?: {
-    promptTokens: number;
-    completionTokens: number;
-  };
-}
+const API_KEY = process.env.LLM_API_KEY || '';
+const BASE_URL = process.env.LLM_BASE_URL || LLM_CONFIG.baseURL;
+const MODEL = process.env.LLM_MODEL || LLM_CONFIG.model;
 
-export async function callLLM(request: LLMRequest): Promise<LLMResponse> {
-  // TODO: Implement actual LLM integration
-  // For now, return mock response
-  logger.warn('LLM client not implemented, returning mock response');
+export async function generateText(prompt: string, context?: Record<string, any>): Promise<string> {
+  if (!API_KEY) {
+    logger.warn('LLM_API_KEY not configured, using mock response');
+    return mockLLMResponse(prompt);
+  }
   
-  return {
-    content: 'Mock LLM response - implement actual LLM integration',
-    usage: {
-      promptTokens: 0,
-      completionTokens: 0,
-    },
-  };
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/chat/completions`,
+      {
+        model: MODEL,
+        messages: [
+          { role: 'system', content: 'You are a helpful assistant.' },
+          { role: 'user', content: prompt },
+        ],
+        temperature: LLM_CONFIG.temperature,
+        max_tokens: LLM_CONFIG.maxTokens,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    return response.data.choices[0]?.message?.content || '';
+  } catch (error: any) {
+    logger.error('LLM API error, using mock:', error.message);
+    return mockLLMResponse(prompt);
+  }
 }
 
-export async function generateChallengeWithLLM(
-  archetype: string,
-  difficulty: string,
-  duration: number
-): Promise<string> {
-  // TODO: Implement LLM-based challenge generation
-  const request: LLMRequest = {
-    systemPrompt: 'You are a challenge generator...',
-    userPrompt: `Generate a ${archetype} challenge...`,
-  };
-  
-  const response = await callLLM(request);
-  return response.content;
+function mockLLMResponse(prompt: string): string {
+  // Simple mock for development
+  if (prompt.includes('challenge')) {
+    return 'Implement a function that reverses a linked list.';
+  }
+  if (prompt.includes('grade')) {
+    return '85';
+  }
+  return 'Mock response';
 }
 
