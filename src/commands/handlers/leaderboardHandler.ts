@@ -1,34 +1,56 @@
-import { getLeaderboard } from '../../core/leaderboardService';
-import { sendSeriesMessage } from '../../messaging/seriesClient';
+import { computeLeaderboard } from '../../core/leaderboardService';
 import { logger } from '../../utils/logging';
 
-export async function handleLeaderboardCommand(userId: string, args: string[]): Promise<void> {
+/**
+ * Leaderboard Handler
+ * !leaderboard [metric] → View leaderboard
+ */
+export async function handleLeaderboardCommand(userId: string, args: string[]): Promise<string> {
   try {
-    const archetype = args[0]; // Optional archetype filter
-    const entries = getLeaderboard(archetype);
+    logger.info(`🏆 [LEADERBOARD] !leaderboard from: ${userId}`);
     
-    if (entries.length === 0) {
-      await sendSeriesMessage(userId, 'No leaderboard data available yet.');
-      return;
+    const metric = args[0] || 'finalElo';
+    const leaderboard = computeLeaderboard(metric);
+    const top10 = leaderboard.slice(0, 10);
+    
+    if (top10.length === 0) {
+      return '🏆 No users on leaderboard yet.\nBe the first!';
     }
     
-    const top10 = entries.slice(0, 10);
-    let message = '🏆 Leaderboard (Top 10):\n\n';
+    // Get user's rank
+    const userRank = leaderboard.findIndex(u => u.userId === userId) + 1;
     
-    for (const entry of top10) {
-      const medal = entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : '  ';
-      message += `${medal} #${entry.rank} - Rating: ${entry.blendedRating} (${entry.tier})\n`;
+    let message = `🏆 Leaderboard\n\n`;
+    
+    top10.forEach((user, index) => {
+      const rank = index + 1;
+      const isCurrentUser = user.userId === userId;
+      const prefix = isCurrentUser ? '👉 ' : `${rank}. `;
+      
+      message += `${prefix}${formatUserId(user.userId)} - ${user.finalElo} Elo (${user.tier})\n`;
+    });
+    
+    if (userRank > 10) {
+      message += `\n📊 Your rank: #${userRank}`;
     }
     
-    const userEntry = entries.find((e) => e.userId === userId);
-    if (userEntry) {
-      message += `\nYour rank: #${userEntry.rank}`;
-    }
-    
-    await sendSeriesMessage(userId, message);
-  } catch (error) {
-    logger.error('Error handling leaderboard command:', error);
-    await sendSeriesMessage(userId, 'Error fetching leaderboard. Please try again later.');
+    logger.info(`🏆 [LEADERBOARD] Response generated (${message.length} chars)`);
+    return message;
+  } catch (error: any) {
+    logger.error('❌ [LEADERBOARD] Error:', error);
+    return '❌ Error fetching leaderboard. Please try again.';
   }
 }
 
+/**
+ * Format user ID for display
+ */
+function formatUserId(userId: string): string {
+  // If it's a phone number, show last 4 digits only
+  if (/^\+?\d+$/.test(userId)) {
+    const last4 = userId.slice(-4);
+    return `***${last4}`;
+  }
+  // Otherwise show first 8 chars
+  return userId.length > 8 ? userId.substring(0, 8) + '...' : userId;
+}

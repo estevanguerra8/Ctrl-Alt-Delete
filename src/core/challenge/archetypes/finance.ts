@@ -1,17 +1,27 @@
-// Stub implementation for finance archetype
+import { ArchetypeId, UserMetrics, Challenge } from '../../types';
+import { generateId } from '../../../utils/validation';
 
-import { Challenge } from '../../types';
+/**
+ * Finance Archetype Implementation (STUB)
+ * TODO: Implement full finance challenge logic
+ */
 
-export function generateFromTemplate(
-  template: any,
-  difficulty: 'easy' | 'medium' | 'hard'
+export function buildFallbackFinanceChallenge(
+  duelId: string,
+  metric: keyof UserMetrics
 ): Challenge {
-  // TODO: Implement finance challenge generation
-  throw new Error('Finance archetype not yet implemented');
-}
+  return {
+    id: generateId(),
+    duelId,
+    archetype: 'finance',
+    metric,
+    title: `Finance ${metric} Challenge`,
+    prompt: `You are a finance mentor. Create a short case study about ${metric} in financial analysis.
 
-export async function gradeSolution(challenge: Challenge, solution: string): Promise<number> {
-  // TODO: Implement finance challenge grading
-  throw new Error('Finance archetype not yet implemented');
-}
+Focus on practical scenarios relevant to finance professionals.
 
+Provide clear instructions and expected outcomes.`,
+    difficulty: 'medium',
+    createdAt: Date.now(),
+  };
+}

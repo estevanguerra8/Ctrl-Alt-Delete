@@ -1,44 +1,63 @@
-import { Challenge, Archetype } from '../types';
-import { loadTemplates } from './templates';
+import { ArchetypeId, UserMetrics, Challenge } from '../types';
+import { pickTemplate, ChallengeTemplate } from './templates';
 import { generateId } from '../../utils/validation';
 import { logger } from '../../utils/logging';
 import * as engineeringArchetype from './archetypes/engineering';
 
-export async function generateChallengeFromTemplate(
-  archetype: Archetype,
-  difficulty: 'easy' | 'medium' | 'hard'
+/**
+ * Challenge Generator
+ * Creates Challenge objects from templates/config
+ */
+export async function generateChallenge(
+  duelId: string,
+  archetype: ArchetypeId,
+  metric: keyof UserMetrics
 ): Promise<Challenge> {
-  const templates = await loadTemplates();
-  const archetypeTemplates = templates[archetype] || [];
-  
-  if (archetypeTemplates.length === 0) {
-    throw new Error(`No templates available for archetype: ${archetype}`);
-  }
-  
-  // Filter by difficulty if possible
-  const filtered = archetypeTemplates.filter((t: any) => t.difficulty === difficulty);
-  const candidates = filtered.length > 0 ? filtered : archetypeTemplates;
-  
-  // Pick random template
-  const template = candidates[Math.floor(Math.random() * candidates.length)];
-  
-  // Use archetype-specific generator if available
-  if (archetype === 'engineering') {
-    return engineeringArchetype.generateFromTemplate(template, difficulty);
-  }
-  
-  // Default template-based generation
-  return {
-    id: generateId(),
-    archetype,
-    title: template.title,
-    description: template.description,
-    difficulty: template.difficulty || difficulty,
-    estimatedDuration: template.estimatedDuration || 30,
-    testCases: template.testCases || [],
-    starterCode: template.starterCode,
-    hints: template.hints,
-    templateId: template.id,
-  };
-}
+  // Step 1: Decide difficulty
+  // For now, use "medium" as default, or could be based on metric/user level
+  const difficulty: 'easy' | 'medium' | 'hard' = 'medium';
 
+  // Step 2: Try to pick a template
+  const template = pickTemplate(archetype, metric, difficulty);
+
+  // Step 3: If template found, build challenge from it
+  if (template) {
+    if (archetype === 'engineering') {
+      return engineeringArchetype.buildEngineeringChallengeFromTemplate(duelId, template);
+    } else {
+      // For other archetypes, build generic challenge from template
+      return {
+        id: generateId(),
+        duelId,
+        archetype,
+        metric: template.metric,
+        title: template.title,
+        prompt: template.prompt,
+        difficulty: template.difficulty,
+        createdAt: Date.now(),
+      };
+    }
+  }
+
+  // Step 4: If no template, use fallback
+  if (archetype === 'engineering') {
+    return engineeringArchetype.buildFallbackEngineeringChallenge(duelId, metric);
+  } else {
+    // For other archetypes, create a generic LLM-style prompt stub
+    // TODO: In production, call LLM to generate challenge prompt
+    return {
+      id: generateId(),
+      duelId,
+      archetype,
+      metric,
+      title: `${archetype} ${metric} Challenge`,
+      prompt: `You are a ${archetype} mentor. Create a short case study or problem that tests ${metric} skills.
+
+Focus on practical, real-world scenarios relevant to ${archetype} professionals.
+
+Provide clear instructions and expected outcomes.`,
+      difficulty,
+      createdAt: Date.now(),
+    };
+  }
+}

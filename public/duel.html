@@ -1,66 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duel Challenge - Series StatCard</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Series Duel</title>
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>⚔️ Duel Challenge</h1>
-            <div id="status" class="status"></div>
-        </header>
-        
-        <main>
-            <div id="loading" class="loading">
-                <p>Loading challenge...</p>
-            </div>
-            
-            <div id="challenge" class="challenge hidden">
-                <div class="challenge-header">
-                    <h2 id="challenge-title"></h2>
-                    <div class="challenge-meta">
-                        <span id="challenge-difficulty"></span>
-                        <span id="challenge-duration"></span>
-                    </div>
-                </div>
-                
-                <div class="challenge-description">
-                    <p id="challenge-description"></p>
-                </div>
-                
-                <div class="code-section">
-                    <label for="solution">Your Solution:</label>
-                    <textarea id="solution" rows="15" placeholder="Enter your solution here..."></textarea>
-                </div>
-                
-                <div id="test-cases" class="test-cases hidden">
-                    <h3>Test Cases</h3>
-                    <div id="test-cases-list"></div>
-                </div>
-                
-                <div id="hints" class="hints hidden">
-                    <h3>Hints</h3>
-                    <ul id="hints-list"></ul>
-                </div>
-                
-                <div class="actions">
-                    <button id="submit-btn" class="btn btn-primary">Submit Solution</button>
-                    <button id="show-hints-btn" class="btn btn-secondary">Show Hints</button>
-                </div>
-                
-                <div id="result" class="result hidden"></div>
-            </div>
-            
-            <div id="error" class="error hidden">
-                <p id="error-message"></p>
-            </div>
-        </main>
-    </div>
-    
-    <script src="script.js"></script>
+  <main class="duel-container">
+    <header>
+      <h1 id="challenge-title">Loading challenge...</h1>
+      <p id="challenge-meta"></p>
+      <p id="timer"></p>
+    </header>
+
+    <section>
+      <pre id="challenge-prompt" class="challenge-prompt"></pre>
+    </section>
+
+    <section class="answer-section">
+      <label for="answer">Your answer</label>
+      <textarea id="answer" rows="10"></textarea>
+      <button id="submitBtn">Submit</button>
+    </section>
+
+    <section id="result" class="result-section"></section>
+
+    <script src="/script.js"></script>
+  </main>
 </body>
 </html>
-

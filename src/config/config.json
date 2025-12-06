@@ -1,49 +1,57 @@
 {
-  "archetypes": {
+  "archetypes": [
+    "engineering",
+    "finance",
+    "creative",
+    "business_ops",
+    "product",
+    "research"
+  ],
+  "metrics": {
     "engineering": {
-      "name": "Engineering",
       "weight": 1.0,
-      "enabled": true
+      "submetrics": ["code_quality", "algorithm_efficiency", "system_design"]
     },
     "finance": {
-      "name": "Finance",
       "weight": 1.0,
-      "enabled": false
+      "submetrics": ["analysis_accuracy", "risk_assessment", "modeling"]
     },
     "creative": {
-      "name": "Creative",
       "weight": 1.0,
-      "enabled": false
+      "submetrics": ["originality", "execution", "impact"]
     },
     "business_ops": {
-      "name": "Business Ops",
       "weight": 1.0,
-      "enabled": false
+      "submetrics": ["efficiency", "strategy", "execution"]
     },
     "product": {
-      "name": "Product",
       "weight": 1.0,
-      "enabled": false
+      "submetrics": ["user_experience", "strategy", "execution"]
     },
     "research": {
-      "name": "Research",
       "weight": 1.0,
-      "enabled": false
+      "submetrics": ["methodology", "insights", "impact"]
     }
   },
   "tiers": {
-    "bronze": { "min": 0, "max": 1000, "name": "Bronze" },
-    "silver": { "min": 1000, "max": 1500, "name": "Silver" },
-    "gold": { "min": 1500, "max": 2000, "name": "Gold" },
-    "platinum": { "min": 2000, "max": 2500, "name": "Platinum" },
-    "diamond": { "min": 2500, "max": 3000, "name": "Diamond" },
-    "master": { "min": 3000, "max": null, "name": "Master" }
+    "bronze": { "minRating": 0, "maxRating": 1000 },
+    "silver": { "minRating": 1000, "maxRating": 1500 },
+    "gold": { "minRating": 1500, "maxRating": 2000 },
+    "platinum": { "minRating": 2000, "maxRating": 2500 },
+    "diamond": { "minRating": 2500, "maxRating": 3000 },
+    "master": { "minRating": 3000, "maxRating": null }
   },
   "elo": {
     "initialRating": 1000,
     "kFactor": 32,
-    "minRating": 0,
-    "maxRating": 4000
+    "blendWeights": {
+      "engineering": 0.2,
+      "finance": 0.15,
+      "creative": 0.15,
+      "business_ops": 0.15,
+      "product": 0.15,
+      "research": 0.2
+    }
   },
   "demo": {
     "enabled": false,

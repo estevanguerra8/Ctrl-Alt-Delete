@@ -1,34 +1,42 @@
-interface Logger {
-  info(message: string, ...args: any[]): void;
-  warn(message: string, ...args: any[]): void;
-  error(message: string, ...args: any[]): void;
-  debug(message: string, ...args: any[]): void;
+const LOG_LEVELS = {
+  DEBUG: 0,
+  INFO: 1,
+  WARN: 2,
+  ERROR: 3,
+} as const;
+
+const currentLevel = process.env.LOG_LEVEL === 'DEBUG' ? LOG_LEVELS.DEBUG : LOG_LEVELS.INFO;
+
+function formatTimestamp(): string {
+  return new Date().toISOString();
 }
 
-class SimpleLogger implements Logger {
-  private formatMessage(level: string, message: string): string {
-    const timestamp = new Date().toISOString();
-    return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
-  }
+function formatMessage(level: string, message: string, ...args: any[]): string {
+  const timestamp = formatTimestamp();
+  const argsStr = args.length > 0 ? ' ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ') : '';
+  return `[${timestamp}] [${level}] ${message}${argsStr}`;
+}
 
-  info(message: string, ...args: any[]): void {
-    console.log(this.formatMessage('info', message), ...args);
-  }
-
-  warn(message: string, ...args: any[]): void {
-    console.warn(this.formatMessage('warn', message), ...args);
-  }
-
-  error(message: string, ...args: any[]): void {
-    console.error(this.formatMessage('error', message), ...args);
-  }
-
-  debug(message: string, ...args: any[]): void {
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(this.formatMessage('debug', message), ...args);
+export const logger = {
+  debug: (message: string, ...args: any[]) => {
+    if (currentLevel <= LOG_LEVELS.DEBUG) {
+      console.log(formatMessage('DEBUG', message, ...args));
     }
-  }
-}
-
-export const logger = new SimpleLogger();
+  },
+  info: (message: string, ...args: any[]) => {
+    if (currentLevel <= LOG_LEVELS.INFO) {
+      console.log(formatMessage('INFO', message, ...args));
+    }
+  },
+  warn: (message: string, ...args: any[]) => {
+    if (currentLevel <= LOG_LEVELS.WARN) {
+      console.warn(formatMessage('WARN', message, ...args));
+    }
+  },
+  error: (message: string, ...args: any[]) => {
+    if (currentLevel <= LOG_LEVELS.ERROR) {
+      console.error(formatMessage('ERROR', message, ...args));
+    }
+  },
+};
 

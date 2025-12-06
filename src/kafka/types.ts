@@ -1,26 +1,26 @@
-export interface AppEvent {
-  type: string;
-  timestamp: string;
-  [key: string]: any;
-}
+import { UserMetrics } from "../core/types";
 
-export interface InboundMessageEvent extends AppEvent {
-  type: 'inbound_message';
+export interface InboundMessageEvent {
+  type: "inbound_message";
   userId: string;
-  channelId: string;
-  message: string;
-  messageId: string;
+  conversationId: string;
+  text: string;
+  timestamp: number;
 }
 
-export interface StatUpdateEvent extends AppEvent {
-  type: 'stat_update';
+export interface StatUpdateEvent {
+  type: "stat_update";
   userId: string;
-  archetype: string;
-  metric: string;
-  value: number;
+  metric: keyof UserMetrics;
+  delta: number;
+  source: string;
+  timestamp: number;
 }
 
-// Series Kafka event format
+export type AppEvent = InboundMessageEvent | StatUpdateEvent;
+
+// Series Kafka event format (from Series Sandbox Messaging Environment)
+// See: Series Hackathon Dashboard.pdf for actual event structure
 export interface SeriesKafkaEvent {
   api_version: string;
   created_at: string;
@@ -45,4 +45,3 @@ export interface SeriesKafkaEvent {
     timestamp?: string;
   };
 }
-

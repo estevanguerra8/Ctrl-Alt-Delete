@@ -1,8 +1,9 @@
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { UserState, Archetype } from './types';
+import { UserState, ArchetypeId, UserMetrics } from './types';
 import { getConfig } from '../config/domainConfig';
 import { logger } from '../utils/logging';
+import { now } from '../utils/time';
 
 const DATA_DIR = process.env.DATA_DIR || './data';
 const USERS_FILE = join(DATA_DIR, 'users.json');
@@ -13,36 +14,32 @@ export function getUserState(userId: string): UserState | null {
   return userStore.get(userId) || null;
 }
 
-export function getOrCreateUserState(userId: string): UserState {
+export function getOrCreateUserState(userId: string, archetype: ArchetypeId = 'engineering'): UserState {
   let user = userStore.get(userId);
   if (!user) {
     const config = getConfig();
-    const now = new Date().toISOString();
     const initialRating = config.elo.initialRating;
     
-    const stats: Record<Archetype, any> = {} as any;
-    const archetypes: Archetype[] = ['engineering', 'finance', 'creative', 'business_ops', 'product', 'research'];
-    
-    for (const arch of archetypes) {
-      stats[arch] = {
-        archetype: arch,
-        rating: initialRating,
-        wins: 0,
-        losses: 0,
-        draws: 0,
-        lastUpdated: now,
-      };
-    }
+    // Initialize UserMetrics with default values
+    const metrics: UserMetrics = {
+      technical: 50,
+      strategy: 50,
+      execution: 50,
+      aura: 50,
+      experience: 50,
+    };
 
     user = {
       userId,
-      stats,
-      blendedRating: initialRating,
-      tier: 'bronze',
-      rank: 0,
-      totalDuels: 0,
-      createdAt: now,
-      updatedAt: now,
+      archetype,
+      metrics,
+      duelElo: initialRating,
+      finalElo: initialRating,
+      tier: 'Bronze',
+      overallScore: 50,
+      streakDays: 0,
+      lastActiveAt: Date.now(),
+      ranks: {},
     };
     
     userStore.set(userId, user);
@@ -56,7 +53,6 @@ export function updateUserState(userId: string, updates: Partial<UserState>): Us
   const updated = {
     ...user,
     ...updates,
-    updatedAt: new Date().toISOString(),
   };
   userStore.set(userId, updated);
   saveUserStore();
@@ -70,6 +66,10 @@ export function getAllUsers(): UserState[] {
 export function loadUserStore(): Promise<void> {
   return new Promise((resolve) => {
     try {
+      if (!existsSync(DATA_DIR)) {
+        mkdirSync(DATA_DIR, { recursive: true });
+      }
+
       if (existsSync(USERS_FILE)) {
         const data = readFileSync(USERS_FILE, 'utf-8');
         const users: UserState[] = JSON.parse(data);
@@ -79,7 +79,8 @@ export function loadUserStore(): Promise<void> {
         }
         logger.info(`Loaded ${users.length} users from ${USERS_FILE}`);
       } else {
-        logger.info(`No existing user data found at ${USERS_FILE}`);
+        writeFileSync(USERS_FILE, JSON.stringify([], null, 2), 'utf-8');
+        logger.info(`Created new users file at ${USERS_FILE}`);
       }
     } catch (error) {
       logger.error('Error loading user store:', error);
@@ -96,4 +97,3 @@ export function saveUserStore(): void {
     logger.error('Error saving user store:', error);
   }
 }
-

@@ -24,4 +24,3 @@ export function parseDuration(duration: string): number {
   const unit = match[2];
   return unit === 'h' ? value * 60 : value;
 }
-

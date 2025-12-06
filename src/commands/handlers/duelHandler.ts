@@ -1,122 +1,151 @@
-import { createDuel, acceptDuel, getDuel, getUserDuels } from '../../core/duelManager';
-import { notifyDuelCreated, notifyDuelAccepted } from '../../core/notificationService';
-import { sendSeriesMessage } from '../../messaging/seriesClient';
+import { createDuel, acceptDuel, getUserDuels, ensureChallengeForDuel, setDuelConversationId } from '../../core/duelManager';
+import { parseDuration } from '../../utils/validation';
 import { logger } from '../../utils/logging';
-import { Archetype } from '../../core/types';
-import { getEnabledArchetypes } from '../../config/domainConfig';
 
-export async function handleDuelCommand(userId: string, args: string[]): Promise<void> {
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+
+/**
+ * Format user ID for display
+ */
+function formatUserId(userId: string): string {
+  if (/^\+?\d+$/.test(userId)) {
+    const last4 = userId.slice(-4);
+    return `***${last4}`;
+  }
+  return userId.length > 8 ? userId.substring(0, 8) + '...' : userId;
+}
+
+/**
+ * Duel Handler
+ * !duel, !accept, !duel_status → creates duels + links
+ */
+export async function handleDuelCommand(userId: string, args: string[]): Promise<string> {
   try {
-    if (args.length < 2) {
-      await sendSeriesMessage(
-        userId,
-        'Usage: !duel @user archetype duration\nExample: !duel @alice engineering 30m'
-      );
-      return;
+    logger.info(`⚔️ [DUEL] !duel from: ${userId}, args: ${args.join(' ')}`);
+    
+    if (args.length < 1) {
+      return 'Usage: !duel @user\nExample: !duel @+17868735256';
     }
     
-    const defenderMention = args[0]; // e.g., "@user123"
-    const archetype = args[1] as Archetype;
-    const durationStr = args[2] || '30m';
+    const opponentId = args[0].replace('@', '');
     
-    // Extract user ID from mention (remove @)
-    const defenderId = defenderMention.replace('@', '');
-    
-    // Validate archetype
-    const enabledArchetypes = getEnabledArchetypes();
-    if (!enabledArchetypes.includes(archetype)) {
-      await sendSeriesMessage(
-        userId,
-        `Invalid archetype. Available: ${enabledArchetypes.join(', ')}`
-      );
-      return;
+    if (opponentId === userId) {
+      return 'You cannot duel yourself!';
     }
     
-    // Parse duration (e.g., "30m" -> 30)
-    const durationMatch = durationStr.match(/(\d+)([mh])/);
-    if (!durationMatch) {
-      await sendSeriesMessage(userId, 'Invalid duration format. Use "30m" or "1h"');
-      return;
-    }
+    // Simplified: use defaults for everything
+    const archetype = 'engineering' as const;
+    const metric = 'technical' as const;
+    const durationMinutes = 30;
     
-    const duration = parseInt(durationMatch[1]);
-    const unit = durationMatch[2];
-    const durationMinutes = unit === 'h' ? duration * 60 : duration;
+    logger.info(`⚔️ [DUEL] Creating duel: ${userId} vs ${opponentId}`);
     
-    const duel = createDuel(userId, defenderId, archetype, durationMinutes);
+           // Create the duel
+           const duel = createDuel(userId, opponentId, archetype, metric, durationMinutes);
+           logger.info(`⚔️ [DUEL] Duel created: ${duel.id}`);
+           
+           // Store conversationId for this user (so we can send comparison message later)
+           // Note: conversationId should be passed from the router, but for now we'll handle it in the router
+           
+           // CRITICAL: Ensure challenge exists before sending link
+           logger.info(`⚔️ [DUEL] Generating challenge for duel ${duel.id}...`);
+           await ensureChallengeForDuel(duel);
+           logger.info(`⚔️ [DUEL] Challenge generated`);
     
-    await sendSeriesMessage(
-      userId,
-      `Duel created! ID: ${duel.id}. Waiting for ${defenderMention} to accept.`
-    );
+    // Generate the duel URL (remove trailing slashes)
+    const baseUrl = (process.env.PUBLIC_BASE_URL || process.env.BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
+    const duelUrl = `${baseUrl}/duel/${duel.id}`;
     
-    await notifyDuelCreated(duel);
+    logger.info(`⚔️ [DUEL] Duel URL: ${duelUrl}`);
+    
+    const response = `⚔️ Duel created between @${formatUserId(userId)} and @${formatUserId(opponentId)}\n\n` +
+           `Archetype: ${archetype}\n` +
+           `Metric: ${metric}\n` +
+           `Duration: ${durationMinutes}m\n\n` +
+           `Open your challenge here:\n${duelUrl}\n\n` +
+           `They can accept with: !accept ${duel.id}`;
+    
+    logger.info(`⚔️ [DUEL] Response generated (${response.length} chars)`);
+    return response;
   } catch (error: any) {
-    logger.error('Error handling duel command:', error);
-    await sendSeriesMessage(userId, `Error creating duel: ${error.message}`);
+    logger.error('❌ [DUEL] Error handling duel command:', error);
+    logger.error('❌ [DUEL] Error stack:', error.stack);
+    return '❌ Error creating duel. Please try again.';
   }
 }
 
-export async function handleAcceptCommand(userId: string, args: string[]): Promise<void> {
+export async function handleAcceptCommand(userId: string, args: string[]): Promise<string> {
   try {
-    if (args.length < 1) {
-      await sendSeriesMessage(userId, 'Usage: !accept duelId');
-      return;
-    }
+    logger.info(`✅ [ACCEPT] !accept from: ${userId}, args: ${args.join(' ')}`);
     
     const duelId = args[0];
-    const duel = await acceptDuel(duelId);
-    
-    if (duel.defenderId !== userId) {
-      await sendSeriesMessage(userId, 'You are not the defender of this duel.');
-      return;
+    if (!duelId) {
+      return 'Usage: !accept <duel_id>';
     }
     
-    await sendSeriesMessage(userId, `Duel accepted! Challenge generated.`);
-    await notifyDuelAccepted(duel);
-  } catch (error: any) {
-    logger.error('Error handling accept command:', error);
-    await sendSeriesMessage(userId, `Error accepting duel: ${error.message}`);
-  }
-}
-
-export async function handleDuelStatusCommand(userId: string, args: string[]): Promise<void> {
-  try {
-    if (args.length < 1) {
-      await sendSeriesMessage(userId, 'Usage: !duel_status duelId');
-      return;
-    }
-    
-    const duelId = args[0];
-    const duel = getDuel(duelId);
+    logger.info(`✅ [ACCEPT] Accepting duel: ${duelId}`);
+    const duel = acceptDuel(duelId, userId);
     
     if (!duel) {
-      await sendSeriesMessage(userId, 'Duel not found.');
-      return;
+      logger.warn(`✅ [ACCEPT] Duel not found or invalid: ${duelId}`);
+      return '❌ Duel not found or already accepted.';
     }
     
-    if (duel.challengerId !== userId && duel.defenderId !== userId) {
-      await sendSeriesMessage(userId, 'You are not part of this duel.');
-      return;
-    }
+    logger.info(`✅ [ACCEPT] Duel accepted: ${duel.id}`);
     
-    const challengeUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/duel/${duel.id}`;
-    let message = `⚔️ Duel Status: ${duel.status.toUpperCase()}\n`;
-    message += `Archetype: ${duel.archetype}\n`;
-    message += `Expires: ${new Date(duel.expiresAt).toLocaleString()}\n`;
+    const baseUrl = process.env.PUBLIC_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
+    const duelUrl = `${baseUrl}/duel/${duel.id}`;
     
-    if (duel.status === 'active') {
-      message += `\nComplete the challenge: ${challengeUrl}`;
-    }
-    
-    if (duel.status === 'completed') {
-      message += `\nWinner: ${duel.winnerId || 'Draw'}`;
-    }
-    
-    await sendSeriesMessage(userId, message);
+    const response = `✅ Duel accepted!\n\nChallenge: ${duelUrl}`;
+    logger.info(`✅ [ACCEPT] Response generated (${response.length} chars)`);
+    return response;
   } catch (error: any) {
-    logger.error('Error handling duel status command:', error);
-    await sendSeriesMessage(userId, `Error fetching duel status: ${error.message}`);
+    logger.error('❌ [ACCEPT] Error handling accept command:', error);
+    return '❌ Error accepting duel. Please try again.';
   }
 }
 
+export async function handleDuelStatusCommand(userId: string, args: string[]): Promise<string> {
+  try {
+    logger.info(`📊 [STATUS] !duel_status from: ${userId}`);
+    
+    const duels = getUserDuels(userId);
+    const active = duels.filter(d => d.status === 'active' || d.status === 'pending');
+    const finished = duels.filter(d => d.status === 'finished');
+    
+    if (active.length === 0 && finished.length === 0) {
+      return 'No duels. Create: !duel @user';
+    }
+    
+    let message = '';
+    
+    if (active.length > 0) {
+      message += `⚔️ Active (${active.length})\n\n`;
+      active.slice(0, 3).forEach(duel => {
+        const opponent = duel.challengerId === userId ? duel.opponentId : duel.challengerId;
+        message += `${formatUserId(opponent)} - ${duel.status}\n`;
+        if (duel.scores[userId] !== undefined) {
+          message += `Score: ${duel.scores[userId]}/100\n`;
+        }
+        message += `${BASE_URL}/duel/${duel.id}\n\n`;
+      });
+    }
+    
+    if (finished.length > 0) {
+      message += `🏁 Finished (${finished.length})\n\n`;
+      finished.slice(0, 3).forEach(duel => {
+        const opponent = duel.challengerId === userId ? duel.opponentId : duel.challengerId;
+        const yourScore = duel.scores[userId] || 0;
+        const oppScore = duel.scores[opponent] || 0;
+        const result = yourScore > oppScore ? '✅' : yourScore < oppScore ? '❌' : '🤝';
+        message += `${result} ${yourScore} vs ${oppScore}\n\n`;
+      });
+    }
+    
+    logger.info(`📊 [STATUS] Response generated (${message.length} chars)`);
+    return message;
+  } catch (error: any) {
+    logger.error('❌ [STATUS] Error:', error);
+    return '❌ Error fetching status. Please try again.';
+  }
+}

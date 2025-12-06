@@ -1,24 +1,11 @@
 {
-  "provider": "openai",
   "model": "gpt-4",
+  "baseURL": "https://api.openai.com/v1",
   "temperature": 0.7,
-  "maxTokens": 2000,
+  "maxTokens": 1000,
   "prompts": {
-    "challengeGeneration": {
-      "system": "You are a challenge generator for a gamified learning platform. Generate coding challenges that are fair, engaging, and appropriate for the given difficulty level.",
-      "userTemplate": "Generate a {archetype} challenge of {difficulty} difficulty. The challenge should be solvable in approximately {duration} minutes."
-    },
-    "grading": {
-      "system": "You are a fair grader for coding challenges. Evaluate solutions based on correctness, efficiency, and code quality.",
-      "userTemplate": "Grade this {archetype} challenge solution. Challenge: {challenge}. Solution: {solution}. Provide a score from 0-100."
-    }
-  },
-  "templates": {
-    "engineering": {
-      "easy": "Implement a function that...",
-      "medium": "Design and implement a system that...",
-      "hard": "Build a scalable solution for..."
-    }
+    "challengeGeneration": "Generate a challenging problem for a {archetype} professional. Difficulty: {difficulty}",
+    "grading": "Grade this submission for a {archetype} challenge. Score 0-100 based on: {criteria}"
   }
 }
 

@@ -1,5 +1,31 @@
-import { StatCardDTO, UserState, Archetype } from './types';
+import { StatCardDTO, UserState, StatCardMetric, ArchetypeId } from './types';
 import { getUserState } from './userStore';
+
+const ARCHETYPE_NAMES: Record<ArchetypeId, string> = {
+  engineering: 'Engineering',
+  finance: 'Finance',
+  creative: 'Creative',
+  business_ops: 'Business Ops',
+  product: 'Product',
+  research: 'Research',
+};
+
+const ARCHETYPE_EMOJIS: Record<ArchetypeId, string> = {
+  engineering: '⚙️',
+  finance: '💰',
+  creative: '🎨',
+  business_ops: '📊',
+  product: '🚀',
+  research: '🔬',
+};
+
+const METRIC_LABELS: Record<keyof import('./types').UserMetrics, { label: string; emoji: string }> = {
+  technical: { label: 'Technical', emoji: '💻' },
+  strategy: { label: 'Strategy', emoji: '🧠' },
+  execution: { label: 'Execution', emoji: '⚡' },
+  aura: { label: 'Aura', emoji: '✨' },
+  experience: { label: 'Experience', emoji: '🌟' },
+};
 
 export function buildStatCardDTO(userId: string): StatCardDTO | null {
   const user = getUserState(userId);
@@ -7,31 +33,22 @@ export function buildStatCardDTO(userId: string): StatCardDTO | null {
     return null;
   }
   
-  const stats: Record<Archetype, any> = {} as any;
-  const archetypes: Archetype[] = ['engineering', 'finance', 'creative', 'business_ops', 'product', 'research'];
-  
-  for (const arch of archetypes) {
-    const stat = user.stats[arch];
-    const total = stat.wins + stat.losses + stat.draws;
-    const winRate = total > 0 ? (stat.wins / total) * 100 : 0;
-    
-    stats[arch] = {
-      rating: stat.rating,
-      wins: stat.wins,
-      losses: stat.losses,
-      draws: stat.draws,
-      winRate: Math.round(winRate * 100) / 100,
-    };
-  }
+  const metrics: StatCardMetric[] = Object.entries(user.metrics).map(([key, value]) => ({
+    key: key as keyof import('./types').UserMetrics,
+    label: METRIC_LABELS[key as keyof import('./types').UserMetrics].label,
+    emoji: METRIC_LABELS[key as keyof import('./types').UserMetrics].emoji,
+    value: value,
+  }));
   
   return {
     userId: user.userId,
+    archetypeId: user.archetype,
+    archetypeName: ARCHETYPE_NAMES[user.archetype],
+    primaryEmoji: ARCHETYPE_EMOJIS[user.archetype],
+    overallScore: user.overallScore,
     tier: user.tier,
-    blendedRating: user.blendedRating,
-    rank: user.rank,
-    stats,
-    totalDuels: user.totalDuels,
-    lastUpdated: user.updatedAt,
+    finalElo: user.finalElo,
+    metrics,
+    badges: [], // TODO: Implement badge system
   };
 }
-

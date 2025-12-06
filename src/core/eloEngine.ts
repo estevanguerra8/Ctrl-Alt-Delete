@@ -1,133 +1,68 @@
-import { UserState, Archetype } from './types';
+import { UserState } from './types';
 import { getConfig } from '../config/domainConfig';
 import { updateUserState, getUserState } from './userStore';
+import { updateUserStats } from './statEngine';
 
-export interface EloResult {
-  newRating: number;
-  ratingChange: number;
+// Lazy load K_FACTOR to avoid loading config at module level
+function getKFactor(): number {
+  return getConfig().elo.kFactor;
 }
 
-export function calculateEloChange(
-  playerRating: number,
+/**
+ * Elo Engine
+ * Handles Elo rating updates and finalElo blending
+ */
+export function calculateExpectedScore(ratingA: number, ratingB: number): number {
+  return 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400));
+}
+
+export function updateElo(
+  userId: string,
   opponentRating: number,
-  result: 'win' | 'loss' | 'draw'
-): EloResult {
-  const config = getConfig();
-  const kFactor = config.elo.kFactor;
-  
-  const expectedScore = 1 / (1 + Math.pow(10, (opponentRating - playerRating) / 400));
-  
-  let actualScore: number;
-  if (result === 'win') {
-    actualScore = 1;
-  } else if (result === 'loss') {
-    actualScore = 0;
-  } else {
-    actualScore = 0.5;
-  }
-  
-  const ratingChange = Math.round(kFactor * (actualScore - expectedScore));
-  const newRating = Math.max(
-    config.elo.minRating,
-    Math.min(config.elo.maxRating, playerRating + ratingChange)
-  );
-  
-  return {
-    newRating,
-    ratingChange,
-  };
-}
-
-export function updateEloAfterDuel(
-  challengerId: string,
-  defenderId: string,
-  archetype: Archetype,
-  winnerId: string | null
-): { challenger: UserState; defender: UserState } {
-  const challenger = getUserState(challengerId);
-  const defender = getUserState(defenderId);
-  
-  if (!challenger || !defender) {
-    throw new Error('Users not found');
-  }
-  
-  const challengerRating = challenger.stats[archetype].rating;
-  const defenderRating = defender.stats[archetype].rating;
-  
-  let challengerResult: 'win' | 'loss' | 'draw';
-  let defenderResult: 'win' | 'loss' | 'draw';
-  
-  if (winnerId === challengerId) {
-    challengerResult = 'win';
-    defenderResult = 'loss';
-  } else if (winnerId === defenderId) {
-    challengerResult = 'loss';
-    defenderResult = 'win';
-  } else {
-    challengerResult = 'draw';
-    defenderResult = 'draw';
-  }
-  
-  const challengerElo = calculateEloChange(challengerRating, defenderRating, challengerResult);
-  const defenderElo = calculateEloChange(defenderRating, challengerRating, defenderResult);
-  
-  const updatedChallenger = updateUserState(challengerId, {
-    stats: {
-      ...challenger.stats,
-      [archetype]: {
-        ...challenger.stats[archetype],
-        rating: challengerElo.newRating,
-      },
-    },
-  });
-  
-  const updatedDefender = updateUserState(defenderId, {
-    stats: {
-      ...defender.stats,
-      [archetype]: {
-        ...defender.stats[archetype],
-        rating: defenderElo.newRating,
-      },
-    },
-  });
-  
-  // Recalculate blended ratings
-  recalculateBlendedRating(challengerId);
-  recalculateBlendedRating(defenderId);
-  
-  return {
-    challenger: updatedChallenger,
-    defender: updatedDefender,
-  };
-}
-
-export function recalculateBlendedRating(userId: string): UserState {
+  actualScore: number // 1 for win, 0.5 for draw, 0 for loss
+): number {
   const user = getUserState(userId);
   if (!user) {
-    throw new Error('User not found');
+    throw new Error(`User ${userId} not found`);
   }
   
-  const config = getConfig();
-  const enabledArchetypes = Object.entries(config.archetypes)
-    .filter(([_, arch]) => arch.enabled)
-    .map(([name]) => name as Archetype);
+  const currentRating = user.duelElo;
+  const expectedScore = calculateExpectedScore(currentRating, opponentRating);
+  const newRating = currentRating + getKFactor() * (actualScore - expectedScore);
   
-  if (enabledArchetypes.length === 0) {
-    return updateUserState(userId, { blendedRating: user.stats.engineering.rating });
-  }
+  updateUserState(userId, {
+    duelElo: Math.round(newRating),
+  });
   
-  let totalWeight = 0;
-  let weightedSum = 0;
+  // Recalculate finalElo (blended)
+  const updatedUser = getUserState(userId)!;
+  const finalElo = calculateFinalElo(updatedUser);
+  updateUserState(userId, { finalElo });
   
-  for (const arch of enabledArchetypes) {
-    const archConfig = config.archetypes[arch];
-    const rating = user.stats[arch].rating;
-    weightedSum += rating * archConfig.weight;
-    totalWeight += archConfig.weight;
-  }
+  // Update stats
+  updateUserStats(userId);
   
-  const blendedRating = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
-  
-  return updateUserState(userId, { blendedRating });
+  return Math.round(newRating);
 }
 
+export function calculateFinalElo(userState: UserState): number {
+  const config = getConfig();
+  let blended = 0;
+  let totalWeight = 0;
+  
+  // Blend based on archetype weights and metrics
+  // For now, use a simple average of metrics weighted by archetype
+  const metrics = userState.metrics;
+  const metricAvg = (
+    metrics.technical +
+    metrics.strategy +
+    metrics.execution +
+    metrics.aura +
+    metrics.experience
+  ) / 5;
+  
+  // Combine duelElo with metric-based score
+  blended = (userState.duelElo * 0.7) + (metricAvg * 10 * 0.3);
+  
+  return Math.round(blended);
+}

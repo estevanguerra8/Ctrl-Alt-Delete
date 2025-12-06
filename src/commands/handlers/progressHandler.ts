@@ -1,27 +1,36 @@
 import { getUserState } from '../../core/userStore';
-import { sendSeriesMessage } from '../../messaging/seriesClient';
 import { logger } from '../../utils/logging';
 
-export async function handleProgressCommand(userId: string): Promise<void> {
+/**
+ * Progress Handler
+ * !progress → self vs past self
+ */
+export async function handleProgressCommand(userId: string): Promise<string> {
   try {
+    logger.info(`📈 [PROGRESS] !progress from: ${userId}`);
+    
     const user = getUserState(userId);
     
     if (!user) {
-      await sendSeriesMessage(userId, 'You don\'t have any progress data yet.');
-      return;
+      return '📈 No progress data found.\nComplete a duel to get started!';
     }
     
-    const message = `📈 Your Progress:\n` +
-      `Total Duels: ${user.totalDuels}\n` +
-      `Current Rating: ${user.blendedRating}\n` +
-      `Tier: ${user.tier.toUpperCase()}\n` +
-      `Rank: #${user.rank}\n` +
-      `\nMember since: ${new Date(user.createdAt).toLocaleDateString()}`;
+    const message = `📈 Your Progress\n\n` +
+      `🏆 Tier: ${user.tier}\n` +
+      `⭐ Elo: ${user.finalElo}\n` +
+      `📈 Score: ${user.overallScore}/99\n` +
+      `🔥 Streak: ${user.streakDays} days\n\n` +
+      `Metrics:\n` +
+      `💻 Technical: ${user.metrics.technical}\n` +
+      `🧠 Strategy: ${user.metrics.strategy}\n` +
+      `⚡ Execution: ${user.metrics.execution}\n` +
+      `✨ Aura: ${user.metrics.aura}\n` +
+      `🌟 Experience: ${user.metrics.experience}`;
     
-    await sendSeriesMessage(userId, message);
-  } catch (error) {
-    logger.error('Error handling progress command:', error);
-    await sendSeriesMessage(userId, 'Error fetching progress. Please try again later.');
+    logger.info(`📈 [PROGRESS] Response generated (${message.length} chars)`);
+    return message;
+  } catch (error: any) {
+    logger.error('❌ [PROGRESS] Error:', error);
+    return '❌ Error fetching progress. Please try again.';
   }
 }
-
