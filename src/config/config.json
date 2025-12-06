@@ -1,0 +1,53 @@
+{
+  "archetypes": {
+    "engineering": {
+      "name": "Engineering",
+      "weight": 1.0,
+      "enabled": true
+    },
+    "finance": {
+      "name": "Finance",
+      "weight": 1.0,
+      "enabled": false
+    },
+    "creative": {
+      "name": "Creative",
+      "weight": 1.0,
+      "enabled": false
+    },
+    "business_ops": {
+      "name": "Business Ops",
+      "weight": 1.0,
+      "enabled": false
+    },
+    "product": {
+      "name": "Product",
+      "weight": 1.0,
+      "enabled": false
+    },
+    "research": {
+      "name": "Research",
+      "weight": 1.0,
+      "enabled": false
+    }
+  },
+  "tiers": {
+    "bronze": { "min": 0, "max": 1000, "name": "Bronze" },
+    "silver": { "min": 1000, "max": 1500, "name": "Silver" },
+    "gold": { "min": 1500, "max": 2000, "name": "Gold" },
+    "platinum": { "min": 2000, "max": 2500, "name": "Platinum" },
+    "diamond": { "min": 2500, "max": 3000, "name": "Diamond" },
+    "master": { "min": 3000, "max": null, "name": "Master" }
+  },
+  "elo": {
+    "initialRating": 1000,
+    "kFactor": 32,
+    "minRating": 0,
+    "maxRating": 4000
+  },
+  "demo": {
+    "enabled": false,
+    "seedUsers": []
+  }
+}
+

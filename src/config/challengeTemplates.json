@@ -1,0 +1,46 @@
+{
+  "engineering": [
+    {
+      "id": "eng-001",
+      "title": "Reverse a Linked List",
+      "description": "Implement a function to reverse a singly linked list in-place.",
+      "difficulty": "medium",
+      "estimatedDuration": 30,
+      "testCases": [
+        {
+          "input": "[1,2,3,4,5]",
+          "expectedOutput": "[5,4,3,2,1]"
+        }
+      ],
+      "starterCode": "function reverseLinkedList(head) {\n  // Your code here\n}",
+      "hints": [
+        "Use two pointers",
+        "Keep track of the previous node"
+      ]
+    },
+    {
+      "id": "eng-002",
+      "title": "Two Sum",
+      "description": "Given an array of integers and a target sum, find two numbers that add up to the target.",
+      "difficulty": "easy",
+      "estimatedDuration": 15,
+      "testCases": [
+        {
+          "input": "nums = [2,7,11,15], target = 9",
+          "expectedOutput": "[0,1]"
+        }
+      ],
+      "starterCode": "function twoSum(nums, target) {\n  // Your code here\n}",
+      "hints": [
+        "Use a hash map",
+        "One pass solution is possible"
+      ]
+    }
+  ],
+  "finance": [],
+  "creative": [],
+  "business_ops": [],
+  "product": [],
+  "research": []
+}
+
