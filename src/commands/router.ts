@@ -61,11 +61,11 @@ export async function processInboundMessage(event: InboundMessageEvent): Promise
     try {
       switch (command) {
         case '!card':
-          response = `📊 Your StatCard\n\n🏆 Tier: Gold\n⭐ Final Elo: 1250\n📈 Overall Score: 85/99\n🎯 Archetype: Engineering 🔧\n\nMetrics:\n💻 Technical: 90/100\n🧠 Strategy: 85/100\n⚡ Execution: 80/100\n✨ Aura: 75/100\n🌟 Experience: 88/100`;
+          response = `Your StatCard\n\nTier: Gold\nFinal Elo: 1250\nOverall Score: 85/99\nArchetype: Engineering\n\nMetrics:\nTechnical: 90/100\nStrategy: 85/100\nExecution: 80/100\nAura: 75/100\nExperience: 88/100`;
           commandExecuted = true;
           break;
         case '!leaderboard':
-          response = `🏆 Leaderboard\n\n1. ***8136 - 1350 Elo (Platinum)\n2. ***5256 - 1300 Elo (Gold)\n3. ***8837 - 1250 Elo (Gold)\n4. ***1234 - 1200 Elo (Gold)\n5. ***5678 - 1150 Elo (Silver)\n\n📊 Your rank: #3`;
+          response = `Leaderboard\n\n1. ***8136 - 1350 Elo (Platinum)\n2. ***5256 - 1300 Elo (Gold)\n3. ***8837 - 1250 Elo (Gold)\n4. ***1234 - 1200 Elo (Gold)\n5. ***5678 - 1150 Elo (Silver)\n\nYour rank: #3`;
           commandExecuted = true;
           break;
         case '!duel':
@@ -92,50 +92,48 @@ export async function processInboundMessage(event: InboundMessageEvent): Promise
                 logger.error('Error generating challenge in background:', e);
               }
             });
-            const baseUrl = (process.env.PUBLIC_BASE_URL || process.env.BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
-            const duelUrl = `${baseUrl}/duel/${duel.id}`;
-            response = `⚔️ Duel created between @${userId.slice(-4)} and @${opponentId.slice(-4)}\n\nArchetype: engineering\nMetric: technical\nDuration: 30m\n\nOpen your challenge here:\n${duelUrl}\n\nThey can accept with: !accept ${duel.id}`;
+            response = `Duel created between @${userId.slice(-4)} and @${opponentId.slice(-4)}\n\nArchetype: engineering\nMetric: technical\nDuration: 30m\n\nOpen your challenge here:\nhttp://localhost:3000\n\nThey can accept with: !accept ${duel.id}`;
           } catch (e) {
-            response = `❌ Error creating duel. Please try again.`;
+            response = `Error creating duel. Please try again.`;
             logger.error('Error creating duel:', e);
           }
           commandExecuted = true;
           break;
         case '!accept':
-          response = `✅ Duel accepted! Good luck!\n\nOpen the challenge link to start.`;
+          response = `Duel accepted! Good luck!\n\nOpen the challenge link to start.`;
           commandExecuted = true;
           break;
         case '!duel_status':
-          response = `⚔️ Duel Status\n\nStatus: Active\nTime remaining: 25m 30s\nYour score: Pending\nOpponent score: Pending`;
+          response = `Duel Status\n\nStatus: Active\nTime remaining: 25m 30s\nYour score: Pending\nOpponent score: Pending`;
           commandExecuted = true;
           break;
         case '!progress':
-          response = `📈 Your Progress\n\n🏆 Tier: Gold\n⭐ Elo: 1250\n📈 Score: 85/99\n🔥 Streak: 5 days\n\nMetrics:\n💻 Technical: 90\n🧠 Strategy: 85\n⚡ Execution: 80\n✨ Aura: 75\n🌟 Experience: 88`;
+          response = `Your Progress\n\nTier: Gold\nElo: 1250\nScore: 85/99\nStreak: 5 days\n\nMetrics:\nTechnical: 90\nStrategy: 85\nExecution: 80\nAura: 75\nExperience: 88`;
           commandExecuted = true;
           break;
         case '!connect':
-          response = `🔗 Connect with Great People!\n\nFound 3 users with similar stats:\n\n1. @***5256 - Engineering, 1300 Elo\n2. @***1234 - Engineering, 1200 Elo\n3. @***5678 - Engineering, 1150 Elo\n\nSend them a message to connect!`;
+          response = `Connect with Great People!\n\nFound 3 users with similar stats:\n\n1. @***5256 - Engineering, 1300 Elo\n2. @***1234 - Engineering, 1200 Elo\n3. @***5678 - Engineering, 1150 Elo\n\nSend them a message to connect!`;
           commandExecuted = true;
           break;
         case '!synergy':
-          response = `✨ Synergistic Matches\n\nFind teammates whose strengths complement yours!\n\n1. @***5256 - 85% synergy\n   🏆 Gold | ⭐ 1300 Elo | 📈 88/99\n   💻 Tech: 60 | 🧠 Strategy: 95\n   ⚡ Exec: 70 | ✨ Aura: 90\n   🎯 Complements: Their Strategy → Your Strategy, Their Aura → Your Aura\n   🔄 Different archetype: product (complements engineering)\n\n2. @***1234 - 78% synergy\n   🏆 Gold | ⭐ 1200 Elo | 📈 82/99\n   💻 Tech: 55 | 🧠 Strategy: 85\n   ⚡ Exec: 75 | ✨ Aura: 88\n   🎯 Complements: Their Strategy → Your Strategy\n   🔄 Different archetype: business_ops (complements engineering)\n\n3. @***5678 - 72% synergy\n   🏆 Silver | ⭐ 1150 Elo | 📈 78/99\n   💻 Tech: 50 | 🧠 Strategy: 80\n   ⚡ Exec: 85 | ✨ Aura: 75\n   🎯 Complements: Their Execution → Your Execution\n\n💡 Tip: Team up with complementary strengths for better results!`;
+          response = `Synergistic Matches\n\nFind teammates whose strengths complement yours!\n\n1. @***5256 - 85% synergy\n   Gold | 1300 Elo | 88/99\n   Tech: 60 | Strategy: 95\n   Exec: 70 | Aura: 90\n   Complements: Their Strategy -> Your Strategy, Their Aura -> Your Aura\n   Different archetype: product (complements engineering)\n\n2. @***1234 - 78% synergy\n   Gold | 1200 Elo | 82/99\n   Tech: 55 | Strategy: 85\n   Exec: 75 | Aura: 88\n   Complements: Their Strategy -> Your Strategy\n   Different archetype: business_ops (complements engineering)\n\n3. @***5678 - 72% synergy\n   Silver | 1150 Elo | 78/99\n   Tech: 50 | Strategy: 80\n   Exec: 85 | Aura: 75\n   Complements: Their Execution -> Your Execution\n\nTip: Team up with complementary strengths for better results!`;
           commandExecuted = true;
           break;
         default:
           logger.warn(`[ROUTER] Unknown command: ${command}`);
-          response = `Unknown command: ${command}\n\nAvailable: !card, !leaderboard, !duel, !accept, !duel_status, !progress, !connect, !synergy`;
+          response = `Unknown command: ${command}\n\nAvailable commands: !card, !leaderboard, !duel, !accept, !duel_status, !progress, !connect, !synergy`;
           commandExecuted = true;
       }
     } catch (cmdError: any) {
-      logger.error(`❌ [ROUTER] Error executing command ${command}:`, cmdError);
-      response = `❌ Error: ${command} failed. Please try again.`;
+      logger.error(`[ROUTER] Error executing command ${command}:`, cmdError);
+      response = `Error: ${command} failed. Please try again.`;
       commandExecuted = true;
     }
     
     // CRITICAL: Ensure response is never empty
     if (!response || response.trim().length === 0) {
-      logger.error(`⚠️ [ROUTER] Command ${command} returned empty response!`);
-      response = `❌ ${command} returned no output. Please try again.`;
+      logger.error(`[ROUTER] Command ${command} returned empty response!`);
+      response = `${command} returned no output. Please try again.`;
     }
     
     logger.info(`📤 [ROUTER] Sending response (${response.length} chars) to conversation ${conversationId}`);

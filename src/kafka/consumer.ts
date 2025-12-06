@@ -34,8 +34,10 @@ export async function startConsumer(
   logger.info(`Topic: ${topic}, Group ID: ${groupId}`);
   
   // Set up SASL/PLAIN auth using env vars
+  // Use unique client ID with timestamp to avoid stale consumer issues
+  const clientId = process.env.KAFKA_CLIENT_ID || `series-statcard-${Date.now()}`;
   const kafkaConfig: any = {
-    clientId: 'series-statcard-service',
+    clientId,
     brokers,
   };
   

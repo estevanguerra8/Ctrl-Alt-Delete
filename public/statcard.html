@@ -12,12 +12,26 @@
             box-sizing: border-box;
         }
 
+        /* Spline 3D Background */
+        .spline-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .spline-background iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
         body {
             font-family: 'Roboto Condensed', sans-serif;
             background: #0f0f1a;
-            background-image: 
-                radial-gradient(ellipse at 30% 20%, rgba(212, 168, 75, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 70% 80%, rgba(100, 100, 120, 0.08) 0%, transparent 50%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -25,6 +39,7 @@
             padding: 40px 20px;
             gap: 40px;
             overflow-x: hidden;
+            position: relative;
         }
 
         .page-title {
@@ -34,7 +49,7 @@
             color: #fff;
             text-transform: uppercase;
             letter-spacing: 4px;
-            text-shadow: 0 0 30px rgba(212, 168, 75, 0.3);
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
         }
 
         .main-container {
@@ -949,10 +964,11 @@
             flex: 1;
             min-width: 320px;
             max-width: 450px;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(0, 0, 0, 0.95);
             border-radius: 16px;
             padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 255, 255, 0.05);
         }
 
         .leaderboard-title {
@@ -986,7 +1002,7 @@
         }
 
         .leaderboard-list::-webkit-scrollbar-thumb {
-            background: rgba(212, 168, 75, 0.4);
+            background: rgba(255, 255, 255, 0.4);
             border-radius: 3px;
         }
 
@@ -1007,20 +1023,20 @@
         }
 
         .leaderboard-row.active {
-            background: rgba(212, 168, 75, 0.15);
-            border-color: rgba(212, 168, 75, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
         .leaderboard-row.gold-row {
-            background: linear-gradient(90deg, rgba(212, 168, 75, 0.15) 0%, transparent 100%);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0%, transparent 100%);
         }
 
         .leaderboard-row.silver-row {
-            background: linear-gradient(90deg, rgba(192, 192, 192, 0.15) 0%, transparent 100%);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, transparent 100%);
         }
 
         .leaderboard-row.bronze-row {
-            background: linear-gradient(90deg, rgba(205, 154, 104, 0.15) 0%, transparent 100%);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
         }
 
         .lb-rank {
@@ -1031,9 +1047,9 @@
             width: 35px;
         }
 
-        .leaderboard-row.gold-row .lb-rank { color: #d4a84b; }
-        .leaderboard-row.silver-row .lb-rank { color: #c0c0c0; }
-        .leaderboard-row.bronze-row .lb-rank { color: #cd9a68; }
+        .leaderboard-row.gold-row .lb-rank { color: #ffffff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+        .leaderboard-row.silver-row .lb-rank { color: #e0e0e0; }
+        .leaderboard-row.bronze-row .lb-rank { color: #c0c0c0; }
 
         .lb-avatar {
             width: 40px;
@@ -1055,15 +1071,14 @@
             object-fit: cover;
         }
 
-        /* Matte/Dull tiers */
-        .lb-avatar.bronze { background: linear-gradient(135deg, #9a7048 0%, #5c3d1e 100%); color: #3d2a1a; }
-        .lb-avatar.silver { background: linear-gradient(135deg, #b8b8b8 0%, #787878 100%); color: #3a3a3a; }
-        /* Shiny tiers */
-        .lb-avatar.gold { background: linear-gradient(135deg, #ffe066 0%, #cc9900 100%); color: #5a4010; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
-        .lb-avatar.platinum { background: linear-gradient(135deg, #e8f5f0 0%, #80c8a8 100%); color: #1a3028; box-shadow: 0 0 10px rgba(168, 216, 192, 0.4); }
-        .lb-avatar.diamond { background: linear-gradient(135deg, #ffffff 0%, #a0d8ff 50%, #70c0f0 100%); color: #1a3040; box-shadow: 0 0 12px rgba(160, 216, 255, 0.5); }
-        .lb-avatar.legend { background: linear-gradient(135deg, #ffcc80 0%, #ff6600 50%, #cc3300 100%); color: #3a1510; box-shadow: 0 0 12px rgba(255, 102, 0, 0.5); }
-        .lb-avatar.icon { background: linear-gradient(135deg, #e0c8ff 0%, #9060d0 50%, #7840b0 100%); color: #2a1540; box-shadow: 0 0 15px rgba(160, 112, 224, 0.5); }
+        /* All tiers - white glow theme */
+        .lb-avatar.bronze { background: linear-gradient(135deg, #d0d0d0 0%, #909090 100%); color: #2a2a2a; }
+        .lb-avatar.silver { background: linear-gradient(135deg, #e0e0e0 0%, #a0a0a0 100%); color: #2a2a2a; box-shadow: 0 0 8px rgba(255, 255, 255, 0.2); }
+        .lb-avatar.gold { background: linear-gradient(135deg, #ffffff 0%, #d0d0d0 100%); color: #1a1a1a; box-shadow: 0 0 12px rgba(255, 255, 255, 0.4); }
+        .lb-avatar.platinum { background: linear-gradient(135deg, #ffffff 0%, #e8e8e8 100%); color: #1a1a1a; box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); }
+        .lb-avatar.diamond { background: linear-gradient(135deg, #ffffff 0%, #f0f0ff 50%, #e0e0ff 100%); color: #1a1a2a; box-shadow: 0 0 18px rgba(255, 255, 255, 0.6); }
+        .lb-avatar.legend { background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 50%, #e8e8e8 100%); color: #1a1a1a; box-shadow: 0 0 20px rgba(255, 255, 255, 0.7); }
+        .lb-avatar.icon { background: linear-gradient(135deg, #ffffff 0%, #f8f8ff 50%, #f0f0ff 100%); color: #1a1a2a; box-shadow: 0 0 25px rgba(255, 255, 255, 0.8); }
 
         .lb-info {
             flex: 1;
@@ -1080,7 +1095,7 @@
 
         .lb-tier {
             font-size: 11px;
-            color: #888;
+            color: rgba(255, 255, 255, 0.5);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -1089,7 +1104,8 @@
             font-family: 'Oswald', sans-serif;
             font-size: 24px;
             font-weight: 700;
-            color: #d4a84b;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
         }
 
         /* Demo Controls */
@@ -1153,6 +1169,11 @@
     </style>
 </head>
 <body>
+    <!-- Spline 3D Background -->
+    <div class="spline-background">
+        <iframe src="https://my.spline.design/dotwavesyes-DbAYyPi7rucdl4HxacWYQxj2/" frameborder="0" loading="lazy"></iframe>
+    </div>
+
     <!-- SVG Definitions -->
     <svg width="0" height="0" style="position: absolute;">
         <defs>
@@ -1267,7 +1288,7 @@
         </div>
 
         <div class="leaderboard-section">
-            <h2 class="leaderboard-title">👑 Global Rankings</h2>
+            <h2 class="leaderboard-title">Global Rankings</h2>
             <div class="leaderboard-list" id="leaderboard-list"></div>
         </div>
     </div>
@@ -1312,113 +1333,143 @@
             ];
 
             // Hardcoded user data with profile images
+            // YOUR USER - Estevan Guerra (first entry, will be shown on card)
+            // Other users are filler data for the leaderboard
             const USERS_DATA = [
                 { 
-                    userId: 'alex_chen', 
-                    displayName: 'Alex Chen',
-                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-                    blendedRating: 1750, 
+                    userId: '+12144988136', 
+                    displayName: 'Estevan Guerra',
+                    avatar: 'images/Screenshot 2025-12-06 at 10.37.35 AM.png',
+                    // Starting at 1350 (Silver) - after duel win, will go to 1420 (Gold) for rank-up demo
+                    blendedRating: 1350, 
                     rank: 1, 
+                    tier: 'silver',
+                    archetype: 'engineering',
                     stats: { 
-                        engineering: { rating: 1850 }, 
-                        finance: { rating: 1680 }, 
-                        creative: { rating: 1720 }, 
-                        business_ops: { rating: 1700 }, 
-                        product: { rating: 1780 }, 
-                        research: { rating: 1620 } 
+                        technical: { rating: 72 }, 
+                        strategy: { rating: 65 }, 
+                        execution: { rating: 60 }, 
+                        aura: { rating: 58 }, 
+                        experience: { rating: 62 }
                     }
                 },
+                // Filler users for leaderboard (below your rank)
                 { 
                     userId: 'sarah_kim', 
                     displayName: 'Sarah Kim',
                     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
-                    blendedRating: 1680, 
+                    blendedRating: 980, 
                     rank: 2, 
                     stats: { 
-                        engineering: { rating: 1720 }, 
-                        finance: { rating: 1750 }, 
-                        creative: { rating: 1650 }, 
-                        business_ops: { rating: 1680 }, 
-                        product: { rating: 1600 }, 
-                        research: { rating: 1700 } 
+                        technical: { rating: 55 }, 
+                        strategy: { rating: 48 }, 
+                        execution: { rating: 52 }, 
+                        aura: { rating: 45 }, 
+                        experience: { rating: 50 }
                     }
                 },
                 { 
                     userId: 'mike_johnson', 
                     displayName: 'Mike Johnson',
                     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-                    blendedRating: 1620, 
+                    blendedRating: 920, 
                     rank: 3, 
                     stats: { 
-                        engineering: { rating: 1580 }, 
-                        finance: { rating: 1600 }, 
-                        creative: { rating: 1700 }, 
-                        business_ops: { rating: 1650 }, 
-                        product: { rating: 1620 }, 
-                        research: { rating: 1550 } 
+                        technical: { rating: 48 }, 
+                        strategy: { rating: 52 }, 
+                        execution: { rating: 50 }, 
+                        aura: { rating: 46 }, 
+                        experience: { rating: 44 }
                     }
                 },
                 { 
                     userId: 'emma_davis', 
                     displayName: 'Emma Davis',
                     avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-                    blendedRating: 1550, 
+                    blendedRating: 870, 
                     rank: 4, 
                     stats: { 
-                        engineering: { rating: 1500 }, 
-                        finance: { rating: 1580 }, 
-                        creative: { rating: 1620 }, 
-                        business_ops: { rating: 1550 }, 
-                        product: { rating: 1480 }, 
-                        research: { rating: 1570 } 
+                        technical: { rating: 45 }, 
+                        strategy: { rating: 50 }, 
+                        execution: { rating: 42 }, 
+                        aura: { rating: 48 }, 
+                        experience: { rating: 46 }
                     }
                 },
                 { 
                     userId: 'james_wilson', 
                     displayName: 'James Wilson',
                     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-                    blendedRating: 1480, 
+                    blendedRating: 820, 
                     rank: 5, 
                     stats: { 
-                        engineering: { rating: 1520 }, 
-                        finance: { rating: 1450 }, 
-                        creative: { rating: 1500 }, 
-                        business_ops: { rating: 1480 }, 
-                        product: { rating: 1460 }, 
-                        research: { rating: 1470 } 
+                        technical: { rating: 42 }, 
+                        strategy: { rating: 45 }, 
+                        execution: { rating: 48 }, 
+                        aura: { rating: 40 }, 
+                        experience: { rating: 44 }
                     }
                 },
                 { 
                     userId: 'lisa_wang', 
                     displayName: 'Lisa Wang',
                     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
-                    blendedRating: 1420, 
+                    blendedRating: 780, 
                     rank: 6, 
                     stats: { 
-                        engineering: { rating: 1400 }, 
-                        finance: { rating: 1450 }, 
-                        creative: { rating: 1480 }, 
-                        business_ops: { rating: 1420 }, 
-                        product: { rating: 1380 }, 
-                        research: { rating: 1390 } 
+                        technical: { rating: 40 }, 
+                        strategy: { rating: 42 }, 
+                        execution: { rating: 45 }, 
+                        aura: { rating: 38 }, 
+                        experience: { rating: 40 }
                     }
                 },
                 { 
                     userId: 'david_brown', 
                     displayName: 'David Brown',
                     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face',
-                    blendedRating: 1350, 
+                    blendedRating: 720, 
                     rank: 7, 
                     stats: { 
-                        engineering: { rating: 1380 }, 
-                        finance: { rating: 1320 }, 
-                        creative: { rating: 1350 }, 
-                        business_ops: { rating: 1340 }, 
-                        product: { rating: 1360 }, 
-                        research: { rating: 1300 } 
+                        technical: { rating: 38 }, 
+                        strategy: { rating: 40 }, 
+                        execution: { rating: 42 }, 
+                        aura: { rating: 35 }, 
+                        experience: { rating: 38 }
                     }
                 }
             ];
+            
+            // Function to update user stats after a duel (call this from backend)
+            function updateUserAfterDuel(userId, newStats, newBlendedRating) {
+                const user = allUsers.find(u => u.userId === userId);
+                if (!user) return;
+                
+                const oldRating = user.blendedRating;
+                const oldTier = getTier(oldRating);
+                
+                // Update stats
+                user.stats = newStats;
+                user.blendedRating = newBlendedRating;
+                
+                // Re-sort and update ranks
+                allUsers.sort((a, b) => b.blendedRating - a.blendedRating);
+                allUsers.forEach((u, i) => u.rank = i + 1);
+                
+                const newTier = getTier(newBlendedRating);
+                
+                // Check if rank up occurred
+                if (newTier.id !== oldTier.id && newBlendedRating > oldRating) {
+                    // Trigger rank up animation
+                    onRatingUpdate(user, oldRating, newBlendedRating);
+                } else {
+                    // Just update the card with new stats
+                    displayCard(userId);
+                }
+                
+                // Update leaderboard
+                renderLeaderboard(allUsers);
+            }
 
             // State
             let allUsers = [...USERS_DATA];
@@ -1447,28 +1498,29 @@
             }
 
             function ratingToOvr(rating) {
+                // Convert blendedRating (500-3000) to FIFA-style overall (40-99)
                 return Math.min(99, Math.max(40, Math.round(40 + (rating - 500) * (59 / 2500))));
             }
 
             function statToDisplay(rating) {
-                return Math.min(99, Math.max(40, Math.round(40 + (rating - 500) * (59 / 2500))));
+                // Stats are now 0-100, display directly but cap at 99
+                return Math.min(99, Math.max(1, Math.round(rating)));
             }
 
             function getBestArchetype(stats) {
                 const labels = {
-                    engineering: 'DEV',
-                    finance: 'FIN',
-                    creative: 'CRE',
-                    business_ops: 'BUS',
-                    product: 'PRD',
-                    research: 'RES'
+                    technical: 'TEC',
+                    strategy: 'STR',
+                    execution: 'EXE',
+                    aura: 'AUR',
+                    experience: 'EXP'
                 };
                 
-                let best = 'engineering';
+                let best = 'technical';
                 let bestRating = 0;
                 
                 for (const [arch, stat] of Object.entries(stats)) {
-                    if (stat.rating > bestRating) {
+                    if (stat && stat.rating > bestRating) {
                         bestRating = stat.rating;
                         best = arch;
                     }
@@ -1515,34 +1567,29 @@
                             </div>
                             
                             <div class="stats-container">
-                                <div class="stat-row left" data-stat-key="engineering">
-                                    <span class="stat-value" data-stat="engineering">${statToDisplay(data.stats.engineering?.rating || 1000)}</span>
-                                    <span class="stat-label">ENG</span>
+                                <div class="stat-row left" data-stat-key="technical">
+                                    <span class="stat-value" data-stat="technical">${statToDisplay(data.stats.technical?.rating || 50)}</span>
+                                    <span class="stat-label">TEC</span>
                                     <span class="stat-change"></span>
                                 </div>
-                                <div class="stat-row right" data-stat-key="finance">
-                                    <span class="stat-value" data-stat="finance">${statToDisplay(data.stats.finance?.rating || 1000)}</span>
-                                    <span class="stat-label">FIN</span>
+                                <div class="stat-row right" data-stat-key="strategy">
+                                    <span class="stat-value" data-stat="strategy">${statToDisplay(data.stats.strategy?.rating || 50)}</span>
+                                    <span class="stat-label">STR</span>
                                     <span class="stat-change"></span>
                                 </div>
-                                <div class="stat-row left" data-stat-key="creative">
-                                    <span class="stat-value" data-stat="creative">${statToDisplay(data.stats.creative?.rating || 1000)}</span>
-                                    <span class="stat-label">CRE</span>
+                                <div class="stat-row left" data-stat-key="execution">
+                                    <span class="stat-value" data-stat="execution">${statToDisplay(data.stats.execution?.rating || 50)}</span>
+                                    <span class="stat-label">EXE</span>
                                     <span class="stat-change"></span>
                                 </div>
-                                <div class="stat-row right" data-stat-key="business_ops">
-                                    <span class="stat-value" data-stat="business_ops">${statToDisplay(data.stats.business_ops?.rating || 1000)}</span>
-                                    <span class="stat-label">BUS</span>
+                                <div class="stat-row right" data-stat-key="aura">
+                                    <span class="stat-value" data-stat="aura">${statToDisplay(data.stats.aura?.rating || 50)}</span>
+                                    <span class="stat-label">AUR</span>
                                     <span class="stat-change"></span>
                                 </div>
-                                <div class="stat-row left" data-stat-key="product">
-                                    <span class="stat-value" data-stat="product">${statToDisplay(data.stats.product?.rating || 1000)}</span>
-                                    <span class="stat-label">PRD</span>
-                                    <span class="stat-change"></span>
-                                </div>
-                                <div class="stat-row right" data-stat-key="research">
-                                    <span class="stat-value" data-stat="research">${statToDisplay(data.stats.research?.rating || 1000)}</span>
-                                    <span class="stat-label">RES</span>
+                                <div class="stat-row left" data-stat-key="experience">
+                                    <span class="stat-value" data-stat="experience">${statToDisplay(data.stats.experience?.rating || 50)}</span>
+                                    <span class="stat-label">EXP</span>
                                     <span class="stat-change"></span>
                                 </div>
                             </div>
@@ -2105,10 +2152,62 @@
 
                 renderLeaderboard(allUsers);
                 
-                // Auto-run the full workflow demo on page load
-                setTimeout(() => {
-                    demoFullWorkflow();
-                }, 800);
+                // Display your card (first user) on load
+                displayCard(allUsers[0].userId);
+
+                // Check if we should trigger rank-up from duel completion
+                const triggerRankUp = sessionStorage.getItem('triggerRankUp');
+                console.log('Checking for rank-up trigger:', triggerRankUp);
+                
+                if (triggerRankUp === 'true') {
+                    console.log('🎉 Rank-up triggered from duel completion!');
+                    sessionStorage.removeItem('triggerRankUp');
+                    
+                    // Get new stats from session storage
+                    const newStatsStr = sessionStorage.getItem('newStats');
+                    const newRatingStr = sessionStorage.getItem('newBlendedRating');
+                    sessionStorage.removeItem('newStats');
+                    sessionStorage.removeItem('newBlendedRating');
+                    
+                    console.log('New stats:', newStatsStr);
+                    console.log('New rating:', newRatingStr);
+
+                    // Trigger rank-up animation after a short delay
+                    setTimeout(() => {
+                        const user = allUsers[0]; // Your user
+                        const oldRating = user.blendedRating;
+                        console.log('Old rating:', oldRating);
+                        
+                        // New stats after duel win - enough to rank up to Gold (1400+)
+                        const newStats = newStatsStr ? JSON.parse(newStatsStr) : {
+                            technical: { rating: 82 },
+                            strategy: { rating: 70 },
+                            execution: { rating: 65 },
+                            aura: { rating: 63 },
+                            experience: { rating: 68 }
+                        };
+                        const newRating = newRatingStr ? parseInt(newRatingStr) : 1420;
+                        console.log('New rating to apply:', newRating);
+
+                        // Update user data in the array
+                        user.stats = newStats;
+                        user.blendedRating = newRating;
+                        
+                        // Re-sort leaderboard and update ranks
+                        allUsers.sort((a, b) => b.blendedRating - a.blendedRating);
+                        allUsers.forEach((u, i) => u.rank = i + 1);
+
+                        // Trigger the rank-up animation
+                        console.log('Triggering onRatingUpdate...');
+                        onRatingUpdate(user, oldRating, newRating);
+                        
+                        // Update leaderboard after animation completes (about 5 seconds)
+                        setTimeout(() => {
+                            console.log('Updating leaderboard with new data...');
+                            renderLeaderboard(allUsers);
+                        }, 5000);
+                    }, 1000);
+                }
             }
 
             // Return public API
@@ -2116,7 +2215,7 @@
                 init,
                 displayCard,
                 renderLeaderboard,
-                demoFullWorkflow,
+                updateUserAfterDuel,  // Call this after a duel completes
                 onRatingUpdate,
                 skipAnimation,
                 playRankUpAnimation,

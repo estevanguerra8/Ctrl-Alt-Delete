@@ -52,9 +52,9 @@ export async function handleDuelCommand(userId: string, args: string[]): Promise
            await ensureChallengeForDuel(duel);
            logger.info(`⚔️ [DUEL] Challenge generated`);
     
-    // Generate the duel URL (remove trailing slashes)
+    // Generate the duel URL (remove trailing slashes) - use base URL for cleaner link
     const baseUrl = (process.env.PUBLIC_BASE_URL || process.env.BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
-    const duelUrl = `${baseUrl}/duel/${duel.id}`;
+    const duelUrl = baseUrl;
     
     logger.info(`⚔️ [DUEL] Duel URL: ${duelUrl}`);
     

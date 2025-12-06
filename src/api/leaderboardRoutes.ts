@@ -1,14 +1,14 @@
 import { Router, Request, Response } from 'express';
-import { getLeaderboard } from '../core/leaderboardService';
+import { computeLeaderboard } from '../core/leaderboardService';
 import { logger } from '../utils/logging';
 
 export const leaderboardRoutes = Router();
 
 leaderboardRoutes.get('/', async (req: Request, res: Response) => {
   try {
-    const { archetype } = req.query;
+    const { metric } = req.query;
     
-    const leaderboard = getLeaderboard(archetype as string | undefined);
+    const leaderboard = computeLeaderboard(metric as string | undefined);
     
     res.json(leaderboard);
   } catch (error) {

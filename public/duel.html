@@ -1,32 +1,565 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Series Duel</title>
-  <link rel="stylesheet" href="/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔️ Duel Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Spline 3D Background */
+        .spline-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .spline-background iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+        }
+
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            color: #fff;
+            position: relative;
+        }
+
+        .page-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .duel-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 30px;
+        }
+
+        /* Duel Container */
+        .duel-container {
+            background: linear-gradient(145deg, rgba(20, 20, 30, 0.95), rgba(10, 10, 20, 0.98));
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.7),
+                0 0 40px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* VS Section */
+        .vs-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .player-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .player-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #ffffff, #c0c0c0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Oswald', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a2e;
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+        }
+
+        .player-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .player-name {
+            font-family: 'Oswald', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .player-tier {
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .player-tier.silver {
+            background: linear-gradient(145deg, #a0a0a0, #707070);
+            color: #1a1a2e;
+        }
+
+        .player-tier.bronze {
+            background: linear-gradient(145deg, #cd7f32, #8b4513);
+            color: #fff;
+        }
+
+        .vs-badge {
+            font-family: 'Oswald', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Challenge Info */
+        .challenge-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .challenge-type {
+            font-family: 'Oswald', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+
+        .challenge-timer {
+            font-family: 'Oswald', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .challenge-timer.warning {
+            color: #fbbf24;
+        }
+
+        .challenge-timer.danger {
+            color: #ef4444;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .challenge-prompt {
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 4px solid rgba(255, 255, 255, 0.6);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 16px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        /* Answer Section */
+        .answer-section {
+            margin-bottom: 30px;
+        }
+
+        .answer-label {
+            font-family: 'Oswald', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .answer-textarea {
+            width: 100%;
+            min-height: 200px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Roboto Condensed', monospace;
+            font-size: 15px;
+            color: #fff;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .answer-textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 18px 40px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(145deg, #ffffff, #d0d0d0);
+            color: #0a0a0f;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(255, 255, 255, 0.5);
+        }
+
+        .submit-btn:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Result Section */
+        .result-section {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            border-radius: 16px;
+            margin-top: 20px;
+        }
+
+        .result-section.victory {
+            display: block;
+            background: linear-gradient(145deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.1));
+            border: 2px solid #4ade80;
+        }
+
+        .result-section.defeat {
+            display: block;
+            background: linear-gradient(145deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+            border: 2px solid #ef4444;
+        }
+
+        .result-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .result-section.victory .result-title {
+            color: #4ade80;
+            text-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+        }
+
+        .result-section.defeat .result-title {
+            color: #ef4444;
+            text-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+        }
+
+        .result-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .result-stat {
+            text-align: center;
+        }
+
+        .result-stat-value {
+            font-family: 'Oswald', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .result-stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+        }
+
+        .rank-up-notice {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(200, 200, 200, 0.1));
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.5); }
+        }
+
+        .rank-up-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .view-card-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 14px 30px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: linear-gradient(145deg, #ffffff, #d0d0d0);
+            color: #0a0a0f;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .view-card-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-  <main class="duel-container">
-    <header>
-      <h1 id="challenge-title">Loading challenge...</h1>
-      <p id="challenge-meta"></p>
-      <p id="timer"></p>
-    </header>
+    <!-- Spline 3D Background -->
+    <div class="spline-background">
+        <iframe src="https://my.spline.design/vaporwavebackground-GVCNj74XL7tonrOXJxx28wWa/" frameborder="0" loading="eager"></iframe>
+    </div>
 
-    <section>
-      <pre id="challenge-prompt" class="challenge-prompt"></pre>
-    </section>
+    <h1 class="page-title">Duel Challenge</h1>
+    <p class="duel-subtitle">Prove your skills and climb the ranks!</p>
 
-    <section class="answer-section">
-      <label for="answer">Your answer</label>
-      <textarea id="answer" rows="10"></textarea>
-      <button id="submitBtn">Submit</button>
-    </section>
+    <div class="duel-container" id="duel-content">
+        <!-- VS Section -->
+        <div class="vs-section">
+            <div class="player-card">
+                <div class="player-avatar" id="player1-avatar">EG</div>
+                <div class="player-name" id="player1-name">Estevan Guerra</div>
+                <div class="player-tier silver" id="player1-tier">Silver</div>
+            </div>
 
-    <section id="result" class="result-section"></section>
+            <div class="vs-badge">VS</div>
 
-    <script src="/script.js"></script>
-  </main>
+            <div class="player-card">
+                <div class="player-avatar" id="player2-avatar">SK</div>
+                <div class="player-name" id="player2-name">Sarah Kim</div>
+                <div class="player-tier bronze" id="player2-tier">Bronze</div>
+            </div>
+        </div>
+
+        <!-- Challenge Info -->
+        <div class="challenge-info">
+            <div class="challenge-header">
+                <span class="challenge-type">Technical Challenge</span>
+                <span class="challenge-timer" id="timer">⏱️ 30:00</span>
+            </div>
+            <div class="challenge-prompt" id="challenge-prompt">
+Write a function that finds the longest palindromic substring in a given string.
+
+Example:
+Input: "babad"
+Output: "bab" or "aba" (both are valid)
+
+Input: "cbbd"
+Output: "bb"
+
+Constraints:
+- 1 <= s.length <= 1000
+- s consists of only lowercase English letters
+            </div>
+        </div>
+
+        <!-- Answer Section -->
+        <div class="answer-section" id="answer-section">
+            <label class="answer-label">Your Solution:</label>
+            <textarea class="answer-textarea" id="answer" placeholder="Write your code here..."></textarea>
+        </div>
+
+        <button class="submit-btn" id="submit-btn" onclick="submitAnswer()">
+            ⚔️ Submit Answer
+        </button>
+
+        <!-- Result Section (hidden initially) -->
+        <div class="result-section" id="result-section">
+            <div class="result-title" id="result-title">VICTORY!</div>
+            <p id="result-message">Excellent work! Your solution was faster and more efficient.</p>
+            
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div class="result-stat-value" id="stat-technical">+15</div>
+                    <div class="result-stat-label">Technical</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" id="stat-elo">+69</div>
+                    <div class="result-stat-label">Elo</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" id="stat-overall">+8</div>
+                    <div class="result-stat-label">Overall</div>
+                </div>
+            </div>
+
+            <div class="rank-up-notice" id="rank-up-notice">
+                <div class="rank-up-title"> RANK UP!</div>
+                <p>You've reached <strong>GOLD</strong> tier!</p>
+            </div>
+
+            <a href="/statcard" class="view-card-btn" onclick="viewCard(); return false;">View Your Updated Card →</a>
+        </div>
+    </div>
+
+    <script>
+        // Timer
+        let timeLeft = 30 * 60; // 30 minutes
+        const timerEl = document.getElementById('timer');
+        
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerEl.textContent = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 300) {
+                timerEl.classList.add('warning');
+            }
+            if (timeLeft <= 60) {
+                timerEl.classList.remove('warning');
+                timerEl.classList.add('danger');
+            }
+            
+            if (timeLeft > 0) {
+                timeLeft--;
+                setTimeout(updateTimer, 1000);
+            }
+        }
+        
+        updateTimer();
+
+        // Submit answer - triggers victory and rank up
+        function submitAnswer() {
+            const answer = document.getElementById('answer').value;
+            if (!answer.trim()) {
+                alert('Please enter your solution!');
+                return;
+            }
+
+            // Disable submit
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Evaluating...';
+
+            // Simulate evaluation delay
+            setTimeout(() => {
+                // Hide answer section
+                document.getElementById('answer-section').style.display = 'none';
+                submitBtn.style.display = 'none';
+
+                // Show victory result
+                const resultSection = document.getElementById('result-section');
+                resultSection.classList.add('victory');
+
+                // Store flag for rank-up animation IMMEDIATELY
+                // Starting rating is 1350 (Silver), new rating is 1420 (Gold) - triggers rank up!
+                sessionStorage.setItem('triggerRankUp', 'true');
+                sessionStorage.setItem('newStats', JSON.stringify({
+                    technical: { rating: 82 },
+                    strategy: { rating: 70 },
+                    execution: { rating: 65 },
+                    aura: { rating: 63 },
+                    experience: { rating: 68 }
+                }));
+                sessionStorage.setItem('newBlendedRating', '1420'); // Gold tier starts at 1400
+                
+                console.log('Rank-up data stored in sessionStorage');
+            }, 2000);
+        }
+        
+        // Handle "View Your Updated Card" button click
+        function viewCard() {
+            window.location.href = '/statcard';
+        }
+
+        // Check URL for duel ID
+        const pathParts = window.location.pathname.split('/');
+        const duelId = pathParts[pathParts.length - 1];
+        if (duelId && duelId !== 'duel') {
+            console.log('Duel ID:', duelId);
+            // Could fetch duel details from API here
+        }
+    </script>
 </body>
 </html>
